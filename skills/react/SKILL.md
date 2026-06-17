@@ -3,7 +3,7 @@ name: react
 description: >-
   React/TypeScript style for components, hooks, stores, and types. Use when
   creating or editing .tsx/.ts in resources/js/, when the user mentions import
-  order, path aliases, object types, or component templates.
+  order, path aliases, object types, component templates, or ESLint setup.
 ---
 
 # React
@@ -36,6 +36,8 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 6. Same-folder `./` siblings (implementation files only; barrel `index.ts` lists locals last)
 
 Within a multiline import, sort bindings alphabetically. Use trailing commas. Prefer `import type { … }` or inline `type` keyword for type-only imports.
+
+When the project uses ESLint, [eslint](../eslint/SKILL.md) enforces import order (`simple-import-sort`), explicit object keys (`object-shorthand: never`), and related rules — run `yarn lint:fix` after edits.
 
 ## Types
 

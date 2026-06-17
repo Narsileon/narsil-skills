@@ -8,6 +8,7 @@ Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for Laravel
 | ---------------------------------- | ------------------------------------------ |
 | [laravel](skills/laravel/SKILL.md) | PHP services, Eloquent models, migrations  |
 | [react](skills/react/SKILL.md)     | React/TSX components, hooks, stores, types |
+| [eslint](skills/eslint/SKILL.md)   | ESLint flat config, import sort, lint CI   |
 
 ## Install (Composer)
 
@@ -47,6 +48,16 @@ Local development (path repo):
 composer update nauten/agent-skills
 ```
 
+## Deployment / CI
+
+`nauten/agent-skills` is **require-dev only** — production and deploy pipelines must use:
+
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+Deploy servers do not need GitLab SSH access to `nauten/agent-skills`. Local dev: `composer install` (with dev dependencies).
+
 ## Wire into AGENTS.md
 
 Add to the consuming project's `AGENTS.md`:
@@ -56,6 +67,7 @@ Add to the consuming project's `AGENTS.md`:
 
 PHP style: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.
 React style: follow the [react](vendor/nauten/agent-skills/skills/react/SKILL.md) skill.
+ESLint: follow the [eslint](vendor/nauten/agent-skills/skills/eslint/SKILL.md) skill (when the project uses ESLint).
 ```
 
 If your `AGENTS.md` tells the agent to skip `vendor/`, add an explicit exception for `vendor/nauten/agent-skills/`.
@@ -65,6 +77,7 @@ If your `AGENTS.md` tells the agent to skip `vendor/`, add an explicit exception
 ```bash
 cp -R vendor/nauten/agent-skills/skills/laravel ~/.cursor/skills/laravel-php
 cp -R vendor/nauten/agent-skills/skills/react ~/.cursor/skills/react
+cp -R vendor/nauten/agent-skills/skills/eslint ~/.cursor/skills/eslint
 ```
 
 ## Path aliases (React)

@@ -2,10 +2,11 @@
   "$schema": "https://getcomposer.org/schema.json",
   "name": "nauten/agent-skills",
   "type": "library",
-  "description": "Cursor agent skills and templates for Laravel/PHP and React/TypeScript",
+  "description": "Cursor agent skills and templates for Laravel, React/TypeScript, and ESLint",
   "keywords": [
     "agent",
     "cursor",
+    "eslint",
     "laravel",
     "react",
     "skills",
@@ -15,7 +16,8 @@
   "extra": {
     "agent-skills": {
       "laravel": "skills/laravel/SKILL.md",
-      "react": "skills/react/SKILL.md"
+      "react": "skills/react/SKILL.md",
+      "eslint": "skills/eslint/SKILL.md"
     }
   }
 }
