@@ -1,0 +1,28 @@
+import { Link } from "@inertiajs/react";
+import { Button } from "@ui/components/button";
+import { Heading } from "@ui/components/heading";
+import { SectionContent, SectionHeader, SectionRoot } from "@ui/components/section";
+import { useTranslator } from "@ui/components/translator";
+import { route } from "ziggy-js";
+
+type UsersIndexProps = {
+  title: string;
+};
+
+function UsersIndex({ title }: UsersIndexProps) {
+  const { trans } = useTranslator();
+
+  const createLabel = trans("ui.create");
+
+  return (
+    <SectionRoot>
+      <SectionHeader>
+        <Heading>{title}</Heading>
+        <Button render={<Link href={route("users.create")} />}>{createLabel}</Button>
+      </SectionHeader>
+      <SectionContent>{/* page content */}</SectionContent>
+    </SectionRoot>
+  );
+}
+
+export default UsersIndex;

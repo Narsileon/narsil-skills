@@ -1,0 +1,24 @@
+{
+  "$schema": "https://getcomposer.org/schema.json",
+  "name": "nauten/agent-skills",
+  "type": "library",
+  "description": "Cursor agent skills and templates for Laravel/PHP and React/TypeScript",
+  "keywords": [
+    "agent",
+    "cursor",
+    "laravel",
+    "react",
+    "skills",
+    "typescript"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^8.4"
+  },
+  "extra": {
+    "agent-skills": {
+      "laravel": "skills/laravel/SKILL.md",
+      "react": "skills/react/SKILL.md"
+    }
+  }
+}

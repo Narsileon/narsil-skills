@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Services\User;
+
+#region USE
+
+use App\Models\User;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
+
+#endregion
+
+final class UserService
+{
+    #region CONSTRUCTOR
+
+    /**
+     * @param CacheRepository $cache
+     *
+     * @return void
+     */
+    public function __construct(CacheRepository $cache)
+    {
+        $this->cache = $cache;
+    }
+
+    #endregion
+
+    #region CONSTANTS
+
+    /**
+     * The cache key for user queries.
+     *
+     * @var string
+     */
+    private const CACHE_KEY = 'users';
+
+    #endregion
+
+    #region PROPERTIES
+
+    /**
+     * @var CacheRepository
+     */
+    private CacheRepository $cache;
+
+    #endregion
+
+    #region PUBLIC METHODS
+
+    /**
+     * @param string $email
+     *
+     * @return User|null
+     */
+    public function findByEmail(string $email): ?User
+    {
+        return User::query()
+            ->where(User::EMAIL, '=', $email)
+            ->first();
+    }
+
+    #endregion
+
+    #region PRIVATE METHODS
+
+    /**
+     * @param string $email
+     *
+     * @return string
+     */
+    private function cacheKey(string $email): string
+    {
+        return self::CACHE_KEY . ':' . $email;
+    }
+
+    #endregion
+}

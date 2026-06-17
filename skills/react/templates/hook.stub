@@ -1,0 +1,44 @@
+import type { FormData } from "@ui/types";
+import { useState } from "react";
+import { route } from "ziggy-js";
+
+function useFetchForm(form: string) {
+  const [form, setForm] = useState<FormData | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function fetchForm() {
+    if (form || loading) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(route("forms.fetch", { form: form }), {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch form");
+      }
+
+      const payload: FormData = await response.json();
+      
+      setForm(payload);
+    } catch (error) {
+      console.error("Failed to fetch form:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return {
+    form,
+    loading,
+    fetchForm,
+  };
+}
+
+export default useFetchForm;

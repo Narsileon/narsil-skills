@@ -1,0 +1,36 @@
+import { cn } from "@ui/lib/utils";
+import { type ComponentProps } from "react";
+import buttonVariants from "./button-variants";
+
+type ButtonProps = ComponentProps<"button"> & {
+  label: string;
+  size?: "default" | "sm";
+  variant?: "primary" | "secondary";
+};
+
+function Button({
+  className,
+  label,
+  size = "default",
+  type = "button",
+  variant = "primary",
+  ...props
+}: ButtonProps) {
+  function handleClick() {
+    // handler logic
+  }
+
+  return (
+    <button
+      data-slot="button"
+      className={cn(buttonVariants({ size: size, variant: variant }), className)}
+      onClick={handleClick}
+      type={type}
+      {...props}
+    >
+      {label}
+    </button>
+  );
+}
+
+export default Button;

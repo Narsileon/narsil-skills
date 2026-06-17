@@ -1,0 +1,36 @@
+import { create } from "zustand";
+
+type CartItem = {
+  id: string;
+  label: string;
+  quantity: number;
+};
+
+type CartStoreState = {
+  items: CartItem[];
+};
+
+type CartStoreActions = {
+  addItem: (item: CartItem) => void;
+  removeItem: (id: string) => void;
+};
+
+type CartStoreType = CartStoreState & CartStoreActions;
+
+const useCartStore = create<CartStoreType>((set) => ({
+  items: [],
+  addItem: (item) =>
+    set((state) => ({
+      items: [...state.items, { id: item.id, label: item.label, quantity: item.quantity }],
+    })),
+  removeItem: (id) =>
+    set((state) => ({
+      items: state.items.filter((item) => {
+        return item.id !== id;
+      }),
+    })),
+}));
+
+export { useCartStore };
+
+export type { CartItem };

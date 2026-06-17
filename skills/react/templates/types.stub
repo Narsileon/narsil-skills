@@ -1,0 +1,14 @@
+import { type IconName } from "@ui/registries/icons";
+
+export type OptionData<T = unknown> = {
+  [key: string]: unknown;
+  icon?: IconName;
+  label: string | Record<string, string>;
+  value: T;
+};
+
+export type RoutesData = Record<string, string> & {
+  parameters?: Record<string, unknown>;
+};
+
+export type UniqueIdentifier = number | string;

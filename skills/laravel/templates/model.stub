@@ -1,0 +1,107 @@
+<?php
+
+namespace App\Models;
+
+#region USE
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+#endregion
+
+final class User extends Model
+{
+    #region CONSTRUCTOR
+
+    /**
+     * {@inheritDoc}
+     */
+    public function __construct(array $attributes = [])
+    {
+        $this->table = self::TABLE;
+
+        parent::__construct($attributes);
+    }
+
+    #endregion
+
+    #region CONSTANTS
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    public final const TABLE = 'users';
+
+    #region • COLUMNS
+
+    /**
+     * The name of the "email" column.
+     *
+     * @var string
+     */
+    public final const EMAIL = 'email';
+
+    /**
+     * The name of the "email verified at" column.
+     *
+     * @var string
+     */
+    public final const EMAIL_VERIFIED_AT = 'email_verified_at';
+
+    /**
+     * The name of the "id" column.
+     *
+     * @var string
+     */
+    public final const ID = 'id';
+
+    /**
+     * The name of the "name" column.
+     *
+     * @var string
+     */
+    public final const NAME = 'name';
+
+    /**
+     * The name of the "password" column.
+     *
+     * @var string
+     */
+    public final const PASSWORD = 'password';
+
+    /**
+     * The name of the "remember token" column.
+     *
+     * @var string
+     */
+    public final const REMEMBER_TOKEN = 'remember_token';
+
+    #endregion
+
+    #region • RELATIONS
+
+    /**
+     * The name of the "posts" relation.
+     *
+     * @var string
+     */
+    public final const RELATION_POSTS = 'posts';
+
+    #endregion
+
+    #endregion
+
+    #region RELATIONSHIPS
+
+    /**
+     * @return HasMany
+     */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class, Post::USER_ID);
+    }
+
+    #endregion
+}
