@@ -12,9 +12,6 @@
     "typescript"
   ],
   "license": "MIT",
-  "require": {
-    "php": "^8.4"
-  },
   "extra": {
     "agent-skills": {
       "laravel": "skills/laravel/SKILL.md",
