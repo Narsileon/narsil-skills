@@ -16,32 +16,37 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 | Eloquent model | [templates/model.stub](templates/model.stub) | `User` with `posts` `HasMany` |
 | Migration | [templates/migration.stub](templates/migration.stub) | `posts` table with `foreignId` → `User::TABLE` |
 
-Apply `class.stub` to any `final` class under `app/Helpers/`, `app/Services/`, `app/View/Components/`, and comparable `app/` code. Use `#region` / `#endregion` markers (not `// region`).
+Apply `class.stub` to any `final` class under `app/Helpers/`, `app/Services/`, `app/View/Components/`, and comparable `app/` code.
 
 ## Service class
 
 - `final` when the class is not extended; `abstract` for shared base services.
+- Copy structure from [templates/class.stub](templates/class.stub) — regions, PHPDoc, and brace style are part of the contract.
+- Region markers: `#region USE`, `#region CONSTRUCTOR`, …, `#endregion` — **never** `// region` (IDE folding + Pint rewrites these; see Tooling).
 - No constructor property promotion — inject dependencies via constructor only when needed.
 - Constants in `CONSTANTS` only; each with description + `@var`.
 - Constants in `CONSTANTS` are sorted alphabetically by constant name (case-sensitive). Associative array values keep ordinal key order when keys are a fixed scale (e.g. `1`–`6`); otherwise sort entries by key.
-- Properties in `PROPERTIES` only when used; each with `@var`; assign in constructor or methods. Properties are sorted alphabetically by property name.
+- Properties in `PROPERTIES` only when used; each with description + `@var`; assign in constructor or methods. Properties are sorted alphabetically by property name.
 - PHPDoc: `boolean`, `integer`, `double` (not `bool`, `int`, `float`). Array types: `string[]`, `integer[]` for sequential arrays — not `list<string>` or `array<int, string>`. Associative arrays: `array<string, string>`. Constructors: `@param` + `@return void`. Methods: `@param` / `@return` only; blank line before `@return` when `@param` exists.
-- Opening brace on its own line after `if`, `foreach`, closures.
+- **Every** method in `PUBLIC METHODS` and `PRIVATE METHODS` gets PHPDoc (`@param`, `@return`) — including `private` methods with native types. Match [templates/class.stub](templates/class.stub); do not strip tags because PHP types are obvious.
+- Opening brace on its own line after `if`, `foreach`, closures, and before the constructor/method body closing pattern in `class.stub`.
 - Methods in `PUBLIC METHODS` and `PRIVATE METHODS` are sorted alphabetically by method name (case-sensitive). `__construct` stays in `CONSTRUCTOR`; migration `down()` still precedes `up()` in `PUBLIC METHODS`.
-- Every method in `PUBLIC METHODS` and `PRIVATE METHODS` gets PHPDoc: `@param` / `@return` (and `@return void` on constructor). Do not omit private-method PHPDoc when native types are present.
+- Helpers in `app/Helpers/`: register as container singletons; expose via a `final` facade in `app/Facades/` (e.g. `Tailwind::merge()`). Do not call `app('helperName')` from application code.
 - Query code uses model constants — `User::EMAIL`, never `'email'`.
 
-## Tooling
+## Tooling (agents)
 
-Laravel Pint conflicts with this skill — do **not** run Pint on skill-styled files unless the project excludes them in `pint.json`:
+Laravel Pint **breaks** this style. After creating or editing skill-styled PHP, **do not run Pint** on those files or on `app/Helpers/`, `app/View/Components/`, or other paths using `class.stub` — even when the consumer project has no `pint.json` exclude.
 
-| Pint rule | Skill requirement |
-| --------- | ----------------- |
-| Comment style | Rewrites `#region` → `// region` — keep `#region` / `#endregion` |
-| `no_superfluous_phpdoc_tags` | Strips `@param` / `@return` on private methods — keep full PHPDoc per `class.stub` |
-| Brace position | Puts `{` on same line — opening brace on its own line after `if`, `foreach`, closures |
+| Pint behaviour | Keep per skill |
+| -------------- | -------------- |
+| Comment style | `#region` / `#endregion` |
+| `no_superfluous_phpdoc_tags` | Full `@param` / `@return` on all methods, including `private` |
+| Brace position | `{` on its own line after `if`, `foreach`, etc. |
 
-In consumer projects, exclude `app/Helpers/` and `app/View/Components/` from Pint (or run Pint only on other paths).
+If Pint was run and regions became `// region` or private PHPDoc disappeared, restore from `class.stub` — do not treat Pint output as the source of truth.
+
+Consumer projects need **no** extra `AGENTS.md` rules or `pint.json` entries for this; this skill is the single source of truth.
 
 ## Eloquent model
 
@@ -71,7 +76,7 @@ In consumer projects, exclude `app/Helpers/` and `app/View/Components/` from Pin
 composer require --dev nauten/agent-skills
 ```
 
-In `AGENTS.md`:
+In the consumer `AGENTS.md`, one line only — no per-project style duplication:
 
 ```markdown
 PHP style: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.
