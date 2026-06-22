@@ -21,7 +21,8 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 - `final` when the class is not extended; `abstract` for shared base services.
 - No constructor property promotion — inject dependencies via constructor only when needed.
 - Constants in `CONSTANTS` only; each with description + `@var`.
-- Properties in `PROPERTIES` only when used; each with `@var`; assign in constructor or methods.
+- Constants in `CONSTANTS` are sorted alphabetically by constant name (case-sensitive). Associative array values keep ordinal key order when keys are a fixed scale (e.g. `1`–`6`); otherwise sort entries by key.
+- Properties in `PROPERTIES` only when used; each with `@var`; assign in constructor or methods. Properties are sorted alphabetically by property name.
 - PHPDoc: `boolean`, `integer`, `double` (not `bool`, `int`, `float`). Constructors: `@param` + `@return void`. Methods: `@param` / `@return` only; blank line before `@return` when `@param` exists.
 - Opening brace on its own line after `if`, `foreach`, closures.
 - Methods in `PUBLIC METHODS` and `PRIVATE METHODS` are sorted alphabetically by method name (case-sensitive). `__construct` stays in `CONSTRUCTOR`; migration `down()` still precedes `up()` in `PUBLIC METHODS`.
@@ -31,6 +32,7 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 
 - `TABLE` and every column/relation as `public final const` in `CONSTANTS`.
 - Group constants with nested regions: `#region • COLUMNS`, `#region • RELATIONS` inside `CONSTANTS`.
+- `TABLE` stays first in `CONSTANTS`, before nested regions; constants inside each nested region are sorted alphabetically by name.
 - Constructor: `$this->table = self::TABLE` (or `static::TABLE` when abstract); set `$this->primaryKey`, `$this->guarded`, `$this->translatable` in constructor when needed.
 - Constant PHPDoc: description + `@var string`.
 - Query and relationship code uses model constants only — `Model::COLUMN`, `Model::RELATION_*`, `Post::USER_ID` — never raw strings.
