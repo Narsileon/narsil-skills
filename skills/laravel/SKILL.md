@@ -12,9 +12,11 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 
 | Artifact | Template | Example |
 | -------- | -------- | ------- |
-| Service class | [templates/class.stub](templates/class.stub) | `UserService` — `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PRIVATE METHODS` |
+| Service / helper class | [templates/class.stub](templates/class.stub) | `UserService`, `TailwindHelper` — `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PRIVATE METHODS` |
 | Eloquent model | [templates/model.stub](templates/model.stub) | `User` with `posts` `HasMany` |
 | Migration | [templates/migration.stub](templates/migration.stub) | `posts` table with `foreignId` → `User::TABLE` |
+
+Apply `class.stub` to any `final` class under `app/Helpers/`, `app/Services/`, `app/View/Components/`, and comparable `app/` code. Use `#region` / `#endregion` markers (not `// region`).
 
 ## Service class
 
