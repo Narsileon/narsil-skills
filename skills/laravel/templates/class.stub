@@ -59,6 +59,18 @@ final class UserService
             ->first();
     }
 
+    /**
+     * @param integer $id
+     *
+     * @return User|null
+     */
+    public function findById(int $id): ?User
+    {
+        return User::query()
+            ->where(User::ID, '=', $id)
+            ->first();
+    }
+
     #endregion
 
     #region PRIVATE METHODS

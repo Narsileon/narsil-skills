@@ -24,6 +24,7 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 - Properties in `PROPERTIES` only when used; each with `@var`; assign in constructor or methods.
 - PHPDoc: `boolean`, `integer`, `double` (not `bool`, `int`, `float`). Constructors: `@param` + `@return void`. Methods: `@param` / `@return` only; blank line before `@return` when `@param` exists.
 - Opening brace on its own line after `if`, `foreach`, closures.
+- Methods in `PUBLIC METHODS` and `PRIVATE METHODS` are sorted alphabetically by method name (case-sensitive). `__construct` stays in `CONSTRUCTOR`; migration `down()` still precedes `up()` in `PUBLIC METHODS`.
 - Query code uses model constants — `User::EMAIL`, never `'email'`.
 
 ## Eloquent model
@@ -34,6 +35,7 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 - Constant PHPDoc: description + `@var string`.
 - Query and relationship code uses model constants only — `Model::COLUMN`, `Model::RELATION_*`, `Post::USER_ID` — never raw strings.
 - Related models (e.g. `Post` for `User::posts()`) follow the same constant pattern in their own model class.
+- Methods in `RELATIONSHIPS`, `SCOPES`, and `PUBLIC METHODS` are sorted alphabetically by method name.
 
 ## Migration
 
@@ -44,6 +46,7 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 - Closure param `$blueprint`; one column per `$blueprint` statement; `{` on its own line.
 - Foreign keys: `Post::USER_ID` + `->constrained(User::TABLE)` — never hard-code `user_id` or `users`.
 - `@return void` on `up()`, `down()`, and private table methods.
+- Private migration helpers in `PRIVATE METHODS` are sorted alphabetically by method name.
 
 ## Install in a project
 
