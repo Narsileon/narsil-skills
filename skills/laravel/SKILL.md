@@ -28,7 +28,20 @@ Apply `class.stub` to any `final` class under `app/Helpers/`, `app/Services/`, `
 - PHPDoc: `boolean`, `integer`, `double` (not `bool`, `int`, `float`). Array types: `string[]`, `integer[]` for sequential arrays — not `list<string>` or `array<int, string>`. Associative arrays: `array<string, string>`. Constructors: `@param` + `@return void`. Methods: `@param` / `@return` only; blank line before `@return` when `@param` exists.
 - Opening brace on its own line after `if`, `foreach`, closures.
 - Methods in `PUBLIC METHODS` and `PRIVATE METHODS` are sorted alphabetically by method name (case-sensitive). `__construct` stays in `CONSTRUCTOR`; migration `down()` still precedes `up()` in `PUBLIC METHODS`.
+- Every method in `PUBLIC METHODS` and `PRIVATE METHODS` gets PHPDoc: `@param` / `@return` (and `@return void` on constructor). Do not omit private-method PHPDoc when native types are present.
 - Query code uses model constants — `User::EMAIL`, never `'email'`.
+
+## Tooling
+
+Laravel Pint conflicts with this skill — do **not** run Pint on skill-styled files unless the project excludes them in `pint.json`:
+
+| Pint rule | Skill requirement |
+| --------- | ----------------- |
+| Comment style | Rewrites `#region` → `// region` — keep `#region` / `#endregion` |
+| `no_superfluous_phpdoc_tags` | Strips `@param` / `@return` on private methods — keep full PHPDoc per `class.stub` |
+| Brace position | Puts `{` on same line — opening brace on its own line after `if`, `foreach`, closures |
+
+In consumer projects, exclude `app/Helpers/` and `app/View/Components/` from Pint (or run Pint only on other paths).
 
 ## Eloquent model
 
