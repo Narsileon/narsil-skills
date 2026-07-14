@@ -17,19 +17,27 @@ type CartStoreActions = {
 
 type CartStoreType = CartStoreState & CartStoreActions;
 
-const useCartStore = create<CartStoreType>((set) => ({
-  items: [],
-  addItem: (item) =>
-    set((state) => ({
-      items: [...state.items, { id: item.id, label: item.label, quantity: item.quantity }],
-    })),
-  removeItem: (id) =>
-    set((state) => ({
-      items: state.items.filter((item) => {
-        return item.id !== id;
-      }),
-    })),
-}));
+const useCartStore = create<CartStoreType>(function (set) {
+  return {
+    items: [],
+    addItem: function addItem(item) {
+      set(function (state) {
+        return {
+          items: [...state.items, { id: item.id, label: item.label, quantity: item.quantity }],
+        };
+      });
+    },
+    removeItem: function removeItem(id) {
+      set(function (state) {
+        return {
+          items: state.items.filter(function (item) {
+            return item.id !== id;
+          }),
+        };
+      });
+    },
+  };
+});
 
 export { useCartStore };
 

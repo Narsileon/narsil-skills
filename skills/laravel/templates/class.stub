@@ -32,7 +32,7 @@ final class UserService
      *
      * @var string
      */
-    private const CACHE_KEY = 'users';
+    private final const CACHE_KEY = 'users';
 
     #endregion
 

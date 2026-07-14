@@ -3,7 +3,8 @@ name: react
 description: >-
   React/TypeScript style for components, hooks, stores, and types. Use when
   creating or editing .tsx/.ts in resources/js/, when the user mentions import
-  order, path aliases, object types, component templates, or ESLint setup.
+  order, path aliases, kebab-case file names, object types, component
+  templates, or ESLint setup.
 ---
 
 # React
@@ -65,7 +66,15 @@ type UserData = {
 - Pass object arguments with explicit keys: `cn({ className: className })`, `variants({ size: size, variant: variant })`.
 - Merge classes with `cn()` from the project's UI utils (e.g. `@ui/lib/utils`).
 - Set `data-slot="…"` on primitive wrappers where the design system expects it.
-- Handlers: `function handleClick() { … }` inside the component, not inline arrows in JSX when logic is non-trivial.
+- Handlers: `function handleClick() { … }` inside the component — not arrow functions or inline callbacks in JSX.
+- Prefer `function name() { … }` over arrow functions (`() =>`, `(x) =>`) for methods, handlers, and callbacks.
+- Prefer `if` / `else` over ternary (`x ? y : z`) and logical branching (`x && y`) — easier to breakpoint while debugging.
+- Function types in `type` definitions may still use `=>` (e.g. `(id: string) => void`).
+
+## File names
+
+- Use **kebab-case** for file and folder names (e.g. `button.tsx`, `button-variants.ts`, `use-fetch-form.ts`, `users-index.tsx`).
+- Identifiers inside files keep their usual casing: PascalCase for components (`Button`), camelCase for hooks and utilities (`useFetchForm`).
 
 ## Folder layout
 

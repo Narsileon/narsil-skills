@@ -20,17 +20,22 @@ Use `class.stub` for `final` classes in `app/Helpers/`, `app/Services/`, `app/Vi
 
 ## Class
 
-- `final` (or `abstract` base); no constructor property promotion.
+- `final` (or `abstract` base).
+- No constructor property promotion — never declare properties on `__construct` parameters (e.g. `__construct(private CacheRepository $cache)`). Declare every property in `PROPERTIES` (typed + `@var`), then assign in `__construct` with `$this->property = $value`.
+- `final` on constants by default (`private final const`, `public final const`) — even when the class is `final`; omit only when a subclass must override the constant.
+- Do not mark methods `final` when the class is already `final` (redundant).
 - `#region` / `#endregion` only — never `// region`.
 - Constants, properties, and methods sorted alphabetically within each region (`down()` before `up()` in migrations; `__construct` in `CONSTRUCTOR`).
 - PHPDoc: `boolean`, `integer`, `double`; `string[]` not `list<string>`; `array<string, string>` for maps. Every method gets `@param` / `@return` (including `private`). Constructor: all `@param` + `@return void`.
 - `{` on its own line after `if`, `foreach`, closures.
+- No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.
+- No ternary (`$x ? $y : $z`); use `if` / `else` blocks — easier to breakpoint while debugging.
 - Helpers: singleton in container + `final` facade in `app/Facades/` — no `app('…')`.
 - Queries: `User::EMAIL`, never `'email'`.
 
 ## Model
 
-- `TABLE` + columns/relations as `public final const` in `CONSTANTS` (`TABLE` first; nested `#region • COLUMNS` / `• RELATIONS`, alphabetical inside each).
+- `TABLE` + columns/relations as `public final const` in `CONSTANTS` (`TABLE` first; nested `#region • COLUMNS` / `• RELATIONS`, alphabetical inside each). Omit `final` on a constant only when a subclass must override it.
 - `$this->table = self::TABLE` in constructor; constants only in queries/relations.
 
 ## Migration
