@@ -1,35 +1,27 @@
 ---
 name: laravel
 description: >-
-  Laravel PHP style for service classes, Eloquent models, and migrations. Use
-  when creating or editing PHP in app/, database/migrations/, seeders, or when
-  the user mentions PHP regions, model TABLE constants, or migration stubs.
+  Laravel PHP style for Eloquent models and migrations. Use when creating or
+  editing PHP in database/migrations/, seeders, Eloquent models, or when the
+  user mentions model TABLE constants or migration stubs. For general PHP
+  classes, follow the php skill first.
 ---
 
 # Laravel
+
+PHP class style: follow [php](../php/SKILL.md) first — regions, PHPDoc, brace style, and [class.stub](../php/templates/class.stub).
 
 Copy [templates/](templates/) into the target project. The stub is the contract — match its `#region` markers, PHPDoc, brace style, and sort order.
 
 | Artifact | Template | Regions |
 | -------- | -------- | ------- |
-| Class (service, helper, component) | [class.stub](templates/class.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PRIVATE METHODS` |
 | Model | [model.stub](templates/model.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `RELATIONSHIPS` |
 | Migration | [migration.stub](templates/migration.stub) | `USE` → `PUBLIC METHODS` → `PRIVATE METHODS` |
 
-Use `class.stub` for `final` classes in `app/Helpers/`, `app/Services/`, `app/View/Components/`, and similar.
+Use [class.stub](../php/templates/class.stub) for `final` classes in `app/Helpers/`, `app/Services/`, `app/View/Components/`, and similar.
 
-## Class
+## Laravel class additions
 
-- `final` (or `abstract` base).
-- No constructor property promotion — never declare properties on `__construct` parameters (e.g. `__construct(private CacheRepository $cache)`). Declare every property in `PROPERTIES` (typed + `@var`), then assign in `__construct` with `$this->property = $value`.
-- `final` on constants by default (`private final const`, `public final const`) — even when the class is `final`; omit only when a subclass must override the constant.
-- Do not mark methods `final` when the class is already `final` (redundant).
-- `#region` / `#endregion` only — never `// region`.
-- Constants, properties, and methods sorted alphabetically within each region (`down()` before `up()` in migrations; `__construct` in `CONSTRUCTOR`).
-- PHPDoc: `boolean`, `integer`, `double`; `string[]` not `list<string>`; `array<string, string>` for maps. Every method gets `@param` / `@return` (including `private`). Constructor: all `@param` + `@return void`.
-- `{` on its own line after `if`, `foreach`, closures.
-- No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.
-- No ternary (`$x ? $y : $z`); use `if` / `else` blocks — easier to breakpoint while debugging.
 - Helpers: singleton in container + `final` facade in `app/Facades/` — no `app('…')`.
 - Queries: `User::EMAIL`, never `'email'`.
 
@@ -48,6 +40,11 @@ Use `class.stub` for `final` classes in `app/Helpers/`, `app/Services/`, `app/Vi
 
 **Do not run Laravel Pint** on skill-styled PHP (`app/Helpers/`, `app/View/Components/`, etc.) — it rewrites `#region`, strips private PHPDoc, and changes braces. If Pint already ran, restore from the stub.
 
-Consumer `AGENTS.md`: one link only — `PHP style: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.`
+Consumer `AGENTS.md`:
+
+```markdown
+Laravel: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.
+PHP style: follow the [php](vendor/nauten/agent-skills/skills/php/SKILL.md) skill.
+```
 
 Install: `composer require --dev nauten/agent-skills`
