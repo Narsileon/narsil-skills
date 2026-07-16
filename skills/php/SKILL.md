@@ -22,8 +22,9 @@ Copy [templates/class.stub](templates/class.stub) into the target project. The s
 - Do not mark methods `final` when the class is already `final` (redundant).
 - `#region` / `#endregion` only — never `// region`.
 - Constants, properties, and methods sorted alphabetically within each region (`__construct` in `CONSTRUCTOR`).
-- PHPDoc: `boolean`, `integer`, `double`; `string[]` not `list<string>`; `array<string, string>` for maps. Every method gets `@param` / `@return` (including `private`). Constructor: all `@param` + `@return void`.
-- `{` on its own line after `if`, `foreach`, closures.
+- PHPDoc: `boolean`, `integer`, `double`; `string[]` not `list<string>`; `array<string, string>` for maps. Every method gets `@param` / `@return` (including `private`). Constructor: all `@param` + `@return void`. Properties/constants: `@var` only. Avoid prose summaries (e.g. `Language column keys matching the TCA fields.`) — not forbidden, but methods and vars should already be self-descriptive.
+- `{` on its own line after `if`, `foreach`, closures. Always braces — never `if ($lang === 'zh') return $this->getZh();`. Prefer `match` or `switch` when branching on one value fits better.
+- Import every type with `use` in the `USE` region — never inline FQCNs (e.g. `\TYPO3\CMS\Extbase\Persistence\QueryInterface`).
 - No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.
 - No ternary (`$x ? $y : $z`); use `if` / `else` blocks — easier to breakpoint while debugging.
 

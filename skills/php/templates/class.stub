@@ -28,8 +28,6 @@ final class UserService
     #region CONSTANTS
 
     /**
-     * The cache key for user queries.
-     *
      * @var string
      */
     private final const CACHE_KEY = 'users';

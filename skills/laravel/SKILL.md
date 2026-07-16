@@ -28,6 +28,7 @@ Use [class.stub](../php/templates/class.stub) for `final` classes in `app/Helper
 ## Model
 
 - `TABLE` + columns/relations as `public final const` in `CONSTANTS` (`TABLE` first; nested `#region • COLUMNS` / `• RELATIONS`, alphabetical inside each). Omit `final` on a constant only when a subclass must override it.
+- Always PHPDoc on model constants: standard description + `@var string` (e.g. `The name of the "email" column.`) — columns are conventionally commented this way (see [model.stub](templates/model.stub)).
 - `$this->table = self::TABLE` in constructor; constants only in queries/relations.
 
 ## Migration
