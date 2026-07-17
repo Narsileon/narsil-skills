@@ -1,16 +1,17 @@
 # Agent skills
 
-Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for ESLint, Laravel, PHP, React, and TYPO3 projects. Distributed as a Composer package — skills live in `vendor/nauten/agent-skills/skills/` after install.
+Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for ESLint, HTML, Laravel, PHP, React, and TYPO3 projects. Distributed as a Composer package — skills live in `vendor/nauten/agent-skills/skills/` after install.
 
 ## Skills
 
 | Skill                              | Use for                                              |
 | ---------------------------------- | ---------------------------------------------------- |
 | [eslint](skills/eslint/SKILL.md)   | ESLint flat config, import sort, lint CI             |
+| [html](skills/html/SKILL.md)       | HTML / Fluid / Blade / JSX markup spacing            |
 | [laravel](skills/laravel/SKILL.md) | Eloquent models, migrations (imports `php`)          |
 | [php](skills/php/SKILL.md)         | PHP classes — regions, PHPDoc, brace style           |
-| [react](skills/react/SKILL.md)     | React/TSX components, hooks, stores, types           |
-| [typo3](skills/typo3/SKILL.md)     | TYPO3 projects (imports `php`; no TYPO3 rules yet)   |
+| [react](skills/react/SKILL.md)     | React/TSX components, hooks, stores (imports `html`) |
+| [typo3](skills/typo3/SKILL.md)     | TYPO3 projects (imports `php`, `html`)               |
 
 ## Install (Composer)
 
@@ -68,13 +69,14 @@ Add to the consuming project's `AGENTS.md`:
 | `vendor/nauten/agent-skills/skills/` | Agent skills + templates (exception to vendor skip) |
 
 ESLint: follow the [eslint](vendor/nauten/agent-skills/skills/eslint/SKILL.md) skill (when the project uses ESLint).
+HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
 Laravel: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.
 PHP style: follow the [php](vendor/nauten/agent-skills/skills/php/SKILL.md) skill.
 React style: follow the [react](vendor/nauten/agent-skills/skills/react/SKILL.md) skill.
 TYPO3: follow the [typo3](vendor/nauten/agent-skills/skills/typo3/SKILL.md) skill.
 ```
 
-Pick the stack links that apply (Laravel: `php` + `laravel`; TYPO3: `php` + `typo3`).
+Pick the stack links that apply (Laravel: `php` + `laravel`; TYPO3: `php` + `html` + `typo3`; React: `html` + `react`).
 
 If your `AGENTS.md` tells the agent to skip `vendor/`, add an explicit exception for `vendor/nauten/agent-skills/`.
 

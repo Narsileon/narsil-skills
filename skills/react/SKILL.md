@@ -4,10 +4,12 @@ description: >-
   React/TypeScript style for components, hooks, stores, and types. Use when
   creating or editing .tsx/.ts in resources/js/, when the user mentions import
   order, path aliases, kebab-case file names, object types, component
-  templates, or ESLint setup.
+  templates, or ESLint setup. JSX markup follows the html skill.
 ---
 
 # React
+
+HTML / JSX markup: follow [html](../html/SKILL.md).
 
 Read templates from [templates/](templates/) in this folder. Generated code goes in `resources/js/` (or package `resources/js/`).
 
@@ -71,6 +73,7 @@ type UserData = {
 - Prefer `if` / `else` over ternary (`x ? y : z`) and logical branching (`x && y`) — easier to breakpoint while debugging.
 - Name variables clearly — never `e`, `ex`, `err`, `i`, `j`, `k` for errors or indexes. Prefer `error`, `exception`, `index`, `key`, etc.
 - Function types in `type` definitions may still use `=>` (e.g. `(id: string) => void`).
+- No empty line right after `{` or right before `}` in function/block bodies.
 
 ## File names
 
@@ -103,6 +106,7 @@ In `AGENTS.md`:
 
 ```markdown
 React style: follow the [react](vendor/nauten/agent-skills/skills/react/SKILL.md) skill.
+HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
 ```
 
 Ensure `tsconfig.json` `paths` and Vite `resolve.alias` match the project's aliases.
