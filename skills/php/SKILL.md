@@ -16,6 +16,7 @@ Copy [templates/class.stub](templates/class.stub) into the target project. The s
 
 ## Class
 
+- Every PHP file starts with `<?php` then `declare(strict_types=1);` (blank line after each).
 - `final` (or `abstract` base).
 - No constructor property promotion — never declare properties on `__construct` parameters (e.g. `__construct(private CacheRepository $cache)`). Declare every property in `PROPERTIES` (typed + `@var`), then assign in `__construct` with `$this->property = $value`.
 - `final` on constants by default (`private final const`, `public final const`) — even when the class is `final`; omit only when a subclass must override the constant.
