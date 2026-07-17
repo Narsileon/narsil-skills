@@ -28,6 +28,7 @@ Copy [templates/class.stub](templates/class.stub) into the target project. The s
 - Import every type with `use` in the `USE` region — never inline FQCNs (e.g. `\TYPO3\CMS\Extbase\Persistence\QueryInterface`).
 - No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.
 - No ternary (`$x ? $y : $z`); use `if` / `else` blocks — easier to breakpoint while debugging.
+- Name variables clearly — never `$e`, `$ex`, `$err`, `$i`, `$j`, `$k`. Prefer `$exception`, `$error`, `$throwable`, `$index`, `$key`, etc.
 
 Consumer `AGENTS.md`: `PHP style: follow the [php](vendor/nauten/agent-skills/skills/php/SKILL.md) skill.`
 

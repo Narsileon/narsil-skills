@@ -69,6 +69,7 @@ type UserData = {
 - Handlers: `function handleClick() { … }` inside the component — not arrow functions or inline callbacks in JSX.
 - Prefer `function name() { … }` over arrow functions (`() =>`, `(x) =>`) for methods, handlers, and callbacks.
 - Prefer `if` / `else` over ternary (`x ? y : z`) and logical branching (`x && y`) — easier to breakpoint while debugging.
+- Name variables clearly — never `e`, `ex`, `err`, `i`, `j`, `k` for errors or indexes. Prefer `error`, `exception`, `index`, `key`, etc.
 - Function types in `type` definitions may still use `=>` (e.g. `(id: string) => void`).
 
 ## File names
