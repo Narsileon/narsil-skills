@@ -23,6 +23,7 @@ Copy [templates/class.stub](templates/class.stub) into the target project. The s
 - `#region` / `#endregion` only — never `// region`.
 - Constants, properties, and methods sorted alphabetically within each region (`__construct` in `CONSTRUCTOR`).
 - PHPDoc: `boolean`, `integer`, `double`; `string[]` not `list<string>`; `array<string, string>` for maps. Every method gets `@param` / `@return` (including `private`). Constructor: all `@param` + `@return void`. Properties/constants: `@var` only. Avoid prose summaries (e.g. `Language column keys matching the TCA fields.`) — not forbidden, but methods and vars should already be self-descriptive.
+- Overrides (Laravel, TYPO3, etc.): if the parent already has PHPDoc, use only `{@inheritDoc}` — do not restate `@param` / `@return`. Use `{@inheritDoc}` only when the parent PHPDoc exists; otherwise write full PHPDoc. Match the parent's native parameter/return types — do not add types the parent left untyped.
 - `{` on its own line after `if`, `foreach`, closures. Always braces — never `if ($lang === 'zh') return $this->getZh();`. Prefer `match` or `switch` when branching on one value fits better.
 - Import every type with `use` in the `USE` region — never inline FQCNs (e.g. `\TYPO3\CMS\Extbase\Persistence\QueryInterface`).
 - No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.
