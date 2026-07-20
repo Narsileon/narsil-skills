@@ -22,7 +22,9 @@ Copy [templates/class.stub](templates/class.stub) into the target project. The s
 - `final` on constants by default (`private final const`, `public final const`) — even when the class is `final`; omit only when a subclass must override the constant.
 - Do not mark methods `final` when the class is already `final` (redundant).
 - `#region` / `#endregion` only — never `// region`.
+- `use` statements sorted alphabetically in the `USE` region.
 - Constants, properties, and methods sorted alphabetically within each region (`__construct` in `CONSTRUCTOR`).
+- Associative arrays in `return` / response payloads sorted alphabetically by key.
 - PHPDoc: `boolean`, `integer`, `double`; `string[]` not `list<string>`; `array<string,mixed>` for maps (no space after `,` — VS Code resolves generics better). Every method gets `@param` / `@return` (including `private`). Constructor: all `@param` + `@return void`. Properties/constants: `@var` only. Avoid prose summaries (e.g. `Language column keys matching the TCA fields.`) — not forbidden, but methods and vars should already be self-descriptive.
 - Overrides (Laravel, TYPO3, etc.): if the parent already has PHPDoc, use only `{@inheritDoc}` — do not restate `@param` / `@return`. Use `{@inheritDoc}` only when the parent PHPDoc exists; otherwise write full PHPDoc. Match the parent's native parameter/return types — do not add types the parent left untyped.
 - `{` on its own line after `if`, `foreach`, closures. Always braces — never `if ($lang === 'zh') return $this->getZh();`. Prefer `match` or `switch` when branching on one value fits better. No empty line right after `{` or right before `}`.
