@@ -7,7 +7,8 @@
 | `skills/laravel/` | Laravel — [SKILL.md](skills/laravel/SKILL.md) + [templates/](skills/laravel/templates/) (imports [php](skills/php/SKILL.md)) |
 | `skills/php/` | PHP — [SKILL.md](skills/php/SKILL.md) + [templates/](skills/php/templates/) |
 | `skills/react/` | React — [SKILL.md](skills/react/SKILL.md) (imports [html](skills/html/SKILL.md)) |
-| `skills/typo3/` | TYPO3 — [SKILL.md](skills/typo3/SKILL.md) (imports [php](skills/php/SKILL.md), [html](skills/html/SKILL.md)) |
+| `skills/typo3/` | TYPO3 — [SKILL.md](skills/typo3/SKILL.md) (imports [php](skills/php/SKILL.md), [html](skills/html/SKILL.md), [extbase](skills/typo3/extbase/SKILL.md)) |
+| `skills/typo3/extbase/` | Extbase — [SKILL.md](skills/typo3/extbase/SKILL.md) + [templates/](skills/typo3/extbase/templates/) (subskill of typo3) |
 
 **Consumer project** (`composer require --dev nauten/agent-skills`): add one link per stack to that project's `AGENTS.md`. Do not copy rules here.
 

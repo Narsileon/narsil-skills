@@ -11,7 +11,8 @@ Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for ESLint,
 | [laravel](skills/laravel/SKILL.md) | Eloquent models, migrations (imports `php`)          |
 | [php](skills/php/SKILL.md)         | PHP classes — regions, PHPDoc, brace style           |
 | [react](skills/react/SKILL.md)     | React/TSX components, hooks, stores (imports `html`) |
-| [typo3](skills/typo3/SKILL.md)     | TYPO3 projects (imports `php`, `html`)               |
+| [typo3](skills/typo3/SKILL.md)     | TYPO3 projects (imports `php`, `html`, `extbase`)    |
+| [extbase](skills/typo3/extbase/SKILL.md) | Extbase models / `TABLE` (subskill of `typo3`)   |
 
 ## Install (Composer)
 
