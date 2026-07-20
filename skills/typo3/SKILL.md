@@ -2,8 +2,8 @@
 name: typo3
 description: >-
   TYPO3 project conventions. Use when working on TYPO3 extensions, Fluid/HTML
-  templates, or PHP in TYPO3 projects. PHP and HTML style follow the php and
-  html skills.
+  templates, XLF locallang files, or PHP in TYPO3 projects. PHP and HTML style
+  follow the php and html skills.
 ---
 
 # TYPO3
@@ -11,7 +11,9 @@ description: >-
 PHP style: follow [php](../php/SKILL.md).
 HTML / Fluid markup: follow [html](../html/SKILL.md).
 
-No TYPO3-specific rules yet — apply project conventions when they exist.
+## XLF
+
+- XLF: sort by id the translations
 
 Consumer `AGENTS.md`:
 
