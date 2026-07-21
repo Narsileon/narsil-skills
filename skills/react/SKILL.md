@@ -17,7 +17,7 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 | --------- | ---------------------------------------------------------------------- | -------------------------------------- |
 | Component | [templates/component.stub](templates/component.stub)                   | `Button` — default export; `function` declaration |
 | Variants  | [templates/component-variants.stub](templates/component-variants.stub) | `buttonVariants` — CVA + `VariantProps` |
-| Barrel    | [templates/component-index.stub](templates/component-index.stub)       | `Button` barrel — named exports + `export type` |
+| Barrel    | [templates/component-index.stub](templates/component-index.stub)       | Named re-exports; shared types only (not prop types) |
 | Page      | [templates/page.stub](templates/page.stub)                             | `UsersIndex` — Inertia page |
 | Hook      | [templates/hook.stub](templates/hook.stub)                             | `useFetchForm` — default export |
 | Store     | [templates/store.stub](templates/store.stub)                           | `useCartStore` — Zustand |
@@ -55,18 +55,23 @@ type UserData = {
 };
 ```
 
-- Split props: `type ButtonProps = ComponentProps<"button"> & { … }` or `Pick` / `Omit` from existing components.
-- Export types from barrel files: `export type { ButtonVariantProps, CartItem };`
+- Split props: `type ButtonProps = ComponentProps<"button"> & { … }` or `ComponentProps<typeof OtherComponent>` / `Pick` / `Omit`.
+- **Do not export prop types** from component files. Consumers should use `ComponentProps<typeof ComponentName>`.
+- Shared domain types (not component props) may still be exported from barrels when reused across modules.
 - Prefer `Record<string, T>` over index signatures when the map is dynamic.
 
 ## Components
 
 - `function ComponentName(…)` — not `const ComponentName = () =>`.
-- Default export from the implementation file (`button.tsx`).
-- Named re-exports from `index.ts` (`export { ComponentName }`).
+- **Default export** from the implementation file (`button.tsx` or folder `index.tsx`).
+- Named re-exports from `index.ts` barrels only when grouping multiple public symbols.
 - Destructure props in the signature; put defaults on destructured params (`variant = "primary"`).
+- **Sort props alphabetically** in:
+  1. the props `type` object keys
+  2. the destructured parameter list (`className` may come first when present; `...props` / `...rest` always last)
+  3. JSX attributes when passing props to child components
 - Pass object arguments with explicit keys: `cn({ className: className })`, `variants({ size: size, variant: variant })`.
-- Merge classes with `cn()` from the project's UI utils (e.g. `@ui/lib/utils`).
+- Merge classes with `cn()` from the project's UI utils (e.g. `@ui/lib/utils` or `@/utilities/ui`).
 - Set `data-slot="…"` on primitive wrappers where the design system expects it.
 - Handlers: `function handleClick() { … }` inside the component — not arrow functions or inline callbacks in JSX.
 - Prefer `function name() { … }` over arrow functions (`() =>`, `(x) =>`) for methods, handlers, and callbacks.
@@ -86,10 +91,17 @@ type UserData = {
 components/button/
   button.tsx           # default export
   button-variants.ts   # optional CVA variants
-  index.ts             # barrel
+  index.ts             # barrel (named re-exports when needed)
 ```
 
-Blocks/pages follow the same pattern under `blocks/` or `pages/`.
+Or a single-file folder (common for blocks):
+
+```
+blocks/stage/stage-item/
+  index.tsx            # default export only — no exported prop types
+```
+
+Blocks/pages follow the same pattern under `blocks/` or `pages/`. Path alias is project-specific (`@ui/…` or `@/…`).
 
 ## Hooks & stores
 
