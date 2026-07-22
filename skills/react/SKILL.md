@@ -3,8 +3,8 @@ name: react
 description: >-
   React/TypeScript style for components, hooks, stores, and types. Use when
   creating or editing .tsx/.ts in resources/js/, when the user mentions import
-  order, path aliases, kebab-case file names, object types, component
-  templates, or ESLint setup. JSX markup follows the html skill.
+  order, JSX prop order, path aliases, kebab-case file names, object types,
+  component templates, or ESLint setup. JSX markup follows the html skill.
 ---
 
 # React
@@ -74,6 +74,28 @@ type UserData = {
 - Name variables clearly — never `e`, `ex`, `err`, `i`, `j`, `k` for errors or indexes. Prefer `error`, `exception`, `index`, `key`, etc.
 - Function types in `type` definitions may still use `=>` (e.g. `(id: string) => void`).
 - No empty line right after `{` or right before `}` in function/block bodies.
+
+### JSX prop order
+
+On JSX elements, sort props in this order:
+
+1. `ref`
+2. `data-*` (e.g. `data-slot`)
+3. `className`
+4. Rest (other props, then `{...spread}` if any)
+5. `key` (always last)
+
+```tsx
+<button
+  ref={ref}
+  data-slot="button"
+  className={className}
+  onClick={handleClick}
+  type={type}
+  {...props}
+  key={id}
+>
+```
 
 ## File names
 
