@@ -13,15 +13,16 @@ HTML / JSX markup: follow [html](../html/SKILL.md).
 
 Read templates from [templates/](templates/) in this folder. Generated code goes in `resources/js/` (or package `resources/js/`).
 
-| Artifact  | Template                                                               | Notes                                  |
-| --------- | ---------------------------------------------------------------------- | -------------------------------------- |
-| Component | [templates/component.stub](templates/component.stub)                   | `Button` — default export; `function` declaration |
-| Variants  | [templates/component-variants.stub](templates/component-variants.stub) | `buttonVariants` — CVA + `VariantProps` |
-| Barrel    | [templates/component-index.stub](templates/component-index.stub)       | `Button` barrel — named exports + `export type` |
-| Page      | [templates/page.stub](templates/page.stub)                             | `UsersIndex` — Inertia page |
-| Hook      | [templates/hook.stub](templates/hook.stub)                             | `useFetchForm` — default export |
-| Store     | [templates/store.stub](templates/store.stub)                           | `useCartStore` — Zustand |
-| Types     | [templates/types.stub](templates/types.stub)                           | Shared `type` definitions              |
+| Artifact     | Template                                                                     | Notes                                                         |
+| ------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Component    | [templates/component.stub](templates/component.stub)                         | `Button` — default export; `function` declaration             |
+| Component spacing | [templates/component-spacing.stub](templates/component-spacing.stub)   | Declaration order + blank lines between logic blocks          |
+| Variants     | [templates/component-variants.stub](templates/component-variants.stub)       | `buttonVariants` — CVA + `VariantProps`                       |
+| Barrel       | [templates/component-index.stub](templates/component-index.stub)             | `Button` barrel — named exports + `export type`               |
+| Page         | [templates/page.stub](templates/page.stub)                                   | `UsersIndex` — Inertia page                                   |
+| Hook         | [templates/hook.stub](templates/hook.stub)                                   | `useFetchForm` — default export                               |
+| Store        | [templates/store.stub](templates/store.stub)                                 | `useCartStore` — Zustand                                      |
+| Types        | [templates/types.stub](templates/types.stub)                                 | Shared `type` definitions                                     |
 
 ## Imports
 
@@ -74,48 +75,9 @@ type UserData = {
 - Name variables clearly — never `e`, `ex`, `err`, `i`, `j`, `k` for errors or indexes. Prefer `error`, `exception`, `index`, `key`, etc.
 - Function types in `type` definitions may still use `=>` (e.g. `(id: string) => void`).
 - No empty line right after `{` or right before `}` in function/block bodies.
+- Blank line between logic blocks (refs, hooks, state, derived, effects, handlers — also inside effects; blank after a method call before calculations). See [templates/component-spacing.stub](templates/component-spacing.stub):
 
-### Component body order
-
-Keep a blank line between logic blocks. Related lines in the same block stay tight. Order declarations like this:
-
-1. **Refs** — `useRef`
-2. **External / shared hooks** — context, router, breakpoints, layout helpers
-3. **State** — `useState`, `useReducer`
-4. **Derived / computed values** — plain `const` from props, state, refs
-5. **Value-producing hooks** — hooks that return values used later (`useScroll`, `useTransform`, `useQuery`, …)
-6. **Effects** — `useEffect`, `useLayoutEffect`, subscription helpers
-7. **Handlers** — `function handleClick() { … }`
-8. **Return** — JSX (early returns only after all hooks)
-
-When a state initializer depends on a value-producing hook, declare that state immediately after the hook it needs — then continue with remaining value hooks / effects.
-
-```tsx
-const rootRef = useRef<HTMLDivElement>(null);
-const listRef = useRef<HTMLUListElement>(null);
-
-const { locale } = usePage();
-const isMobile = useMaxLg();
-
-const [open, setOpen] = useState(false);
-const [selectedId, setSelectedId] = useState<string | null>(null);
-
-const items = options ?? [];
-const itemCount = Math.max(items.length, 1);
-
-const { scrollYProgress } = useScroll({ target: rootRef });
-const opacity = useTransform(scrollYProgress, [0, 1], [0.1, 1]);
-
-useEffect(() => {
-  // …
-}, [itemCount]);
-
-function handleSelect(id: string) {
-  setSelectedId(id);
-}
-
-return (/* … */);
-```
+  1. Refs → 2. External hooks → 3. State → 4. Derived → 5. Value hooks → 6. Effects → 7. Handlers → 8. Return
 
 ### JSX prop order
 

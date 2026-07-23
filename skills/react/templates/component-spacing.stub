@@ -1,0 +1,85 @@
+import { useEffect, useRef, useState } from "react";
+
+type MenuProps = {
+  options?: string[] | null;
+};
+
+function Menu({ options }: MenuProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  // 2. External / shared hooks (context, router, breakpoints, …)
+
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const items = options ?? [];
+  const itemCount = Math.max(items.length, 1);
+
+  // 5. Value-producing hooks (useScroll, useTransform, useQuery, …)
+  //    State that depends on one of these goes immediately after that hook.
+
+  useEffect(() => {
+    function onScrollOrResize() {
+      const root = rootRef.current;
+
+      if (!root) {
+        return;
+      }
+
+      const rect = root.getBoundingClientRect();
+
+      const inset = window.innerHeight * 0.25;
+      const nextOpen = rect.bottom > inset && rect.top < window.innerHeight - inset;
+
+      setOpen(nextOpen);
+    }
+
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
+
+    onScrollOrResize();
+
+    return function cleanup() {
+      window.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  }, [itemCount]);
+
+  function handleToggle() {
+    setOpen(!open);
+  }
+
+  function handleSelect(id: string) {
+    setSelectedId(id);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={rootRef}>
+      <button aria-expanded={open} onClick={handleToggle} type="button">
+        Menu
+      </button>
+      {open ? (
+        <ul ref={listRef}>
+          {items.map(function renderItem(id) {
+            function handleItemClick() {
+              handleSelect(id);
+            }
+
+            return (
+              <li key={id}>
+                <button onClick={handleItemClick} type="button">
+                  {id}
+                  {selectedId === id ? " ✓" : null}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+export default Menu;
