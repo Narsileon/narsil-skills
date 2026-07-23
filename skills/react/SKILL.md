@@ -75,6 +75,48 @@ type UserData = {
 - Function types in `type` definitions may still use `=>` (e.g. `(id: string) => void`).
 - No empty line right after `{` or right before `}` in function/block bodies.
 
+### Component body order
+
+Keep a blank line between logic blocks. Related lines in the same block stay tight. Order declarations like this:
+
+1. **Refs** — `useRef`
+2. **External / shared hooks** — context, router, breakpoints, layout helpers
+3. **State** — `useState`, `useReducer`
+4. **Derived / computed values** — plain `const` from props, state, refs
+5. **Value-producing hooks** — hooks that return values used later (`useScroll`, `useTransform`, `useQuery`, …)
+6. **Effects** — `useEffect`, `useLayoutEffect`, subscription helpers
+7. **Handlers** — `function handleClick() { … }`
+8. **Return** — JSX (early returns only after all hooks)
+
+When a state initializer depends on a value-producing hook, declare that state immediately after the hook it needs — then continue with remaining value hooks / effects.
+
+```tsx
+const rootRef = useRef<HTMLDivElement>(null);
+const listRef = useRef<HTMLUListElement>(null);
+
+const { locale } = usePage();
+const isMobile = useMaxLg();
+
+const [open, setOpen] = useState(false);
+const [selectedId, setSelectedId] = useState<string | null>(null);
+
+const items = options ?? [];
+const itemCount = Math.max(items.length, 1);
+
+const { scrollYProgress } = useScroll({ target: rootRef });
+const opacity = useTransform(scrollYProgress, [0, 1], [0.1, 1]);
+
+useEffect(() => {
+  // …
+}, [itemCount]);
+
+function handleSelect(id: string) {
+  setSelectedId(id);
+}
+
+return (/* … */);
+```
+
 ### JSX prop order
 
 On JSX elements, sort props in this order:
