@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\View\Components;
+
+#region USE
+
+use Illuminate\Contracts\View\View;
+use Illuminate\View\Component;
+
+#endregion
+
+final class Button extends Component
+{
+    #region CONSTRUCTOR
+
+    /**
+     * @param string $size
+     * @param string $variant
+     *
+     * @return void
+     */
+    public function __construct(string $size = 'default', string $variant = 'primary')
+    {
+        $this->size = $size;
+        $this->variant = $variant;
+    }
+
+    #endregion
+
+    #region PROPERTIES
+
+    /**
+     * @var string
+     */
+    public string $size;
+
+    /**
+     * @var string
+     */
+    public string $variant;
+
+    #endregion
+
+    #region PUBLIC METHODS
+
+    /**
+     * @return View
+     */
+    public function render(): View
+    {
+        return view('components.button');
+    }
+
+    #endregion
+}

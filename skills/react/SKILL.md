@@ -4,12 +4,14 @@ description: >-
   React/TypeScript style for components, hooks, stores, and types. Use when
   creating or editing .tsx/.ts in resources/js/, when the user mentions import
   order, JSX prop order, path aliases, kebab-case file names, object types,
-  component templates, or ESLint setup. JSX markup follows the html skill.
+  component templates, or ESLint setup. JSX markup follows the html skill;
+  Tailwind classes follow the tailwind skill.
 ---
 
 # React
 
 HTML / JSX markup: follow [html](../html/SKILL.md).
+Tailwind tokens: follow [tailwind](../tailwind/SKILL.md).
 
 Read templates from [templates/](templates/) in this folder. Generated code goes in `resources/js/` (or package `resources/js/`).
 
@@ -133,6 +135,7 @@ In `AGENTS.md`:
 ```markdown
 React style: follow the [react](vendor/nauten/agent-skills/skills/react/SKILL.md) skill.
 HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
+Tailwind: follow the [tailwind](vendor/nauten/agent-skills/skills/tailwind/SKILL.md) skill.
 ```
 
 Ensure `tsconfig.json` `paths` and Vite `resolve.alias` match the project's aliases.

@@ -18,7 +18,9 @@ Copy [templates/](templates/) into the target project. The stub is the contract 
 | Model | [model.stub](templates/model.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `RELATIONSHIPS` |
 | Migration | [migration.stub](templates/migration.stub) | `USE` → `PUBLIC METHODS` → `PRIVATE METHODS` |
 
-Use [class.stub](../php/templates/class.stub) for `final` classes in `app/Helpers/`, `app/Services/`, `app/View/Components/`, and similar.
+Use [class.stub](../php/templates/class.stub) for `final` classes in `app/Helpers/`, `app/Services/`, and similar.
+
+Blade View Components (`app/View/Components/` + `.blade.php`): follow [blade](../blade/SKILL.md) (imports `php`, `html`, `tailwind`).
 
 ## Laravel class additions
 
@@ -46,6 +48,9 @@ Consumer `AGENTS.md`:
 ```markdown
 Laravel: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.
 PHP style: follow the [php](vendor/nauten/agent-skills/skills/php/SKILL.md) skill.
+Blade: follow the [blade](vendor/nauten/agent-skills/skills/blade/SKILL.md) skill.
+HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
+Tailwind: follow the [tailwind](vendor/nauten/agent-skills/skills/tailwind/SKILL.md) skill.
 ```
 
 Install: `composer require --dev nauten/agent-skills`

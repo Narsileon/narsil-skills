@@ -1,0 +1,16 @@
+@php
+    $class = twMerge(
+        'inline-flex items-center',
+        match ($size) {
+            'sm' => 'h-8 px-3',
+            default => 'h-9 px-4',
+        },
+        match ($variant) {
+            'secondary' => 'bg-secondary text-secondary-foreground',
+            default => 'bg-primary text-primary-foreground',
+        },
+    );
+@endphp
+<button {{ $attributes->twMerge($class) }} data-slot="button" type="button">
+    {{ $slot }}
+</button>
