@@ -8,6 +8,7 @@
     "blade",
     "cursor",
     "eslint",
+    "general",
     "html",
     "laravel",
     "php",
@@ -22,6 +23,7 @@
     "agent-skills": {
       "blade": "skills/blade/SKILL.md",
       "eslint": "skills/eslint/SKILL.md",
+      "general": "skills/general/SKILL.md",
       "html": "skills/html/SKILL.md",
       "laravel": "skills/laravel/SKILL.md",
       "php": "skills/php/SKILL.md",

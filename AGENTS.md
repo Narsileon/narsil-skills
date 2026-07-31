@@ -1,11 +1,8 @@
 # AGENTS.md
 
-## Bug fixes
-
-Find the root cause; fix with the smallest change that solves it — not the shallowest workaround. If a small refactor simplifies an overcomplicated path (e.g. website ↔ API), prefer that over patching both ends.
-
 | Path | Role |
 |------|------|
+| `skills/general/` | General — [SKILL.md](skills/general/SKILL.md) (bug fixes, comments) |
 | `skills/blade/` | Blade — [SKILL.md](skills/blade/SKILL.md) + [templates/](skills/blade/templates/) (imports [php](skills/php/SKILL.md), [html](skills/html/SKILL.md), [tailwind](skills/tailwind/SKILL.md)) |
 | `skills/eslint/` | ESLint — [SKILL.md](skills/eslint/SKILL.md) |
 | `skills/html/` | HTML — [SKILL.md](skills/html/SKILL.md) |
@@ -21,8 +18,7 @@ Find the root cause; fix with the smallest change that solves it — not the sha
 ```markdown
 | `vendor/nauten/agent-skills/skills/` | Agent skills + templates (exception to vendor skip) |
 
-Bug fixes: follow [AGENTS.md](vendor/nauten/agent-skills/AGENTS.md) (Bug fixes).
-
+General: follow the [general](vendor/nauten/agent-skills/skills/general/SKILL.md) skill.
 Blade: follow the [blade](vendor/nauten/agent-skills/skills/blade/SKILL.md) skill.
 ESLint: follow the [eslint](vendor/nauten/agent-skills/skills/eslint/SKILL.md) skill.
 HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
@@ -33,4 +29,4 @@ Tailwind: follow the [tailwind](vendor/nauten/agent-skills/skills/tailwind/SKILL
 TYPO3: follow the [typo3](vendor/nauten/agent-skills/skills/typo3/SKILL.md) skill.
 ```
 
-Pick the stack links that apply (e.g. Laravel + Blade: `php` + `laravel` + `html` + `blade` + `tailwind`; TYPO3: `php` + `html` + `typo3`; React: `html` + `react` + `tailwind`).
+Pick the stack links that apply (e.g. always `general`; Laravel + Blade: `php` + `laravel` + `html` + `blade` + `tailwind`; TYPO3: `php` + `html` + `typo3`; React: `html` + `react` + `tailwind`).
