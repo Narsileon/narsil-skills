@@ -16,15 +16,3 @@ Extbase Domain models / QueryBuilder: follow [extbase](extbase/SKILL.md).
 ## XLF
 
 - XLF: sort by id the translations
-
-## Agents
-
-Consumer `AGENTS.md`:
-
-```markdown
-PHP style: follow the [php](vendor/nauten/agent-skills/skills/php/SKILL.md) skill.
-HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
-TYPO3: follow the [typo3](vendor/nauten/agent-skills/skills/typo3/SKILL.md) skill.
-```
-
-Install: `composer require --dev nauten/agent-skills`

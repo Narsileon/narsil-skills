@@ -19,7 +19,3 @@ Use `[…]` only when no scale token matches.
 
 - **Blade / PHP:** `twMerge()` via [gehrisandro/tailwind-merge-laravel](https://github.com/gehrisandro/tailwind-merge-laravel) — see [blade](../blade/SKILL.md).
 - **React / TS:** project `cn()` (typically `clsx` + `tailwind-merge`) — see [react](../react/SKILL.md).
-
-Consumer `AGENTS.md`: `Tailwind: follow the [tailwind](vendor/nauten/agent-skills/skills/tailwind/SKILL.md) skill.`
-
-Install: `composer require --dev nauten/agent-skills`

@@ -28,7 +28,3 @@ Good:
   <div></div>
 </form>
 ```
-
-Consumer `AGENTS.md`: `HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.`
-
-Install: `composer require --dev nauten/agent-skills`

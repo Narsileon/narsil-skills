@@ -167,16 +167,3 @@ Use `--max-warnings 0` — zero warnings in CI.
 ## Existing configs
 
 When a project already has ESLint, **merge** the shared packages, plugins, and `sharedRules` into its flat config. Keep framework-specific presets; add anything missing from the shared block. Do not remove team rules to match a minimal template.
-
-## Install in a project (agent skills)
-
-```bash
-composer require --dev nauten/agent-skills
-```
-
-In `AGENTS.md`:
-
-```markdown
-ESLint: follow the [eslint](vendor/nauten/agent-skills/skills/eslint/SKILL.md) skill.
-React style: follow the [react](vendor/nauten/agent-skills/skills/react/SKILL.md) skill.
-```

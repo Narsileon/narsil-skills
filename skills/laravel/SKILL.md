@@ -42,15 +42,3 @@ Blade View Components (`app/View/Components/` + `.blade.php`): follow [blade](..
 ## Agents
 
 **Do not run Laravel Pint** on skill-styled PHP (`app/Helpers/`, `app/View/Components/`, etc.) — it rewrites `#region`, strips private PHPDoc, and changes braces. If Pint already ran, restore from the stub.
-
-Consumer `AGENTS.md`:
-
-```markdown
-Laravel: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.
-PHP style: follow the [php](vendor/nauten/agent-skills/skills/php/SKILL.md) skill.
-Blade: follow the [blade](vendor/nauten/agent-skills/skills/blade/SKILL.md) skill.
-HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
-Tailwind: follow the [tailwind](vendor/nauten/agent-skills/skills/tailwind/SKILL.md) skill.
-```
-
-Install: `composer require --dev nauten/agent-skills`

@@ -4,8 +4,8 @@ description: >-
   React/TypeScript style for components, hooks, stores, and types. Use when
   creating or editing .tsx/.ts in resources/js/, when the user mentions import
   order, JSX prop order, path aliases, kebab-case file names, object types,
-  component templates, or ESLint setup. JSX markup follows the html skill;
-  Tailwind classes follow the tailwind skill.
+  component templates, ESLint setup, performance, or dynamic/lazy loading.
+  JSX markup follows the html skill; Tailwind classes follow the tailwind skill.
 ---
 
 # React
@@ -28,7 +28,7 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 
 ## Imports
 
-**Never use parent-relative imports** (`../`, `../../`). Use path aliases (`@ui/…`, `@/…`) for anything outside the current folder.
+**Never use parent-relative imports** (`../`, `../../`). Use path aliases (`@ui/…`, `@/…`) for anything outside the current folder. Ensure `tsconfig.json` `paths` and Vite `resolve.alias` match the project's aliases.
 
 `./` is allowed only for siblings in the same directory (e.g. `./button-variants`).
 
@@ -119,23 +119,15 @@ components/button/
 
 Blocks/pages follow the same pattern under `blocks/` or `pages/`.
 
+## Performance
+
+Split static vs dynamic imports by content role — not by whole block:
+
+- **Eager (no dynamic):** SEO-critical copy, headings, text, and any content that must ship in the initial render.
+- **Dynamic (lazy):** Images, video, animation, and other heavy media — especially when outside the first viewport.
+- **Mixed blocks** (e.g. text + media): keep the text/SEO part eager; load the media or animated part dynamically. Never lazy-load an entire text+media block just because it includes media.
+
 ## Hooks & stores
 
 - Hooks: `function useFetchForm(…)`, default export, return a plain object `{ form, loading, fetchForm }`.
 - Stores: Zustand `create<State & Actions>()`, separate `type` for state, actions, and combined store; named export `useCartStore`; export data types when reused.
-
-## Install in a project
-
-```bash
-composer require --dev nauten/agent-skills
-```
-
-In `AGENTS.md`:
-
-```markdown
-React style: follow the [react](vendor/nauten/agent-skills/skills/react/SKILL.md) skill.
-HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
-Tailwind: follow the [tailwind](vendor/nauten/agent-skills/skills/tailwind/SKILL.md) skill.
-```
-
-Ensure `tsconfig.json` `paths` and Vite `resolve.alias` match the project's aliases.

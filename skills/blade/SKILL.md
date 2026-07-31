@@ -87,17 +87,3 @@ Put base classes and variant maps in `@php`, merge with `twMerge`, apply via `$a
 
 - Blade: kebab-case (`button.blade.php`, `alert-dialog.blade.php`).
 - PHP class: PascalCase matching the component (`Button.php` → `<x-button>`).
-
-## Agents
-
-Consumer `AGENTS.md` (Laravel + Blade stack):
-
-```markdown
-PHP style: follow the [php](vendor/nauten/agent-skills/skills/php/SKILL.md) skill.
-HTML: follow the [html](vendor/nauten/agent-skills/skills/html/SKILL.md) skill.
-Laravel: follow the [laravel](vendor/nauten/agent-skills/skills/laravel/SKILL.md) skill.
-Blade: follow the [blade](vendor/nauten/agent-skills/skills/blade/SKILL.md) skill.
-Tailwind: follow the [tailwind](vendor/nauten/agent-skills/skills/tailwind/SKILL.md) skill.
-```
-
-Install skills package: `composer require --dev nauten/agent-skills`
