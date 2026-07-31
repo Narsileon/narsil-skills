@@ -88,7 +88,7 @@ On JSX elements, sort props in this order:
 1. `ref`
 2. `data-*` (e.g. `data-slot`)
 3. `className`
-4. Rest (other props, then `{...spread}` if any)
+4. Rest — other props alphabetically, then `{...spread}` if any
 5. `key` (always last)
 
 ```tsx
