@@ -55,6 +55,7 @@ Deploy servers do not need GitLab SSH access to `nauten/agent-skills`. Local dev
 ```bash
 cp -R vendor/nauten/agent-skills/skills/blade ~/.cursor/skills/blade
 cp -R vendor/nauten/agent-skills/skills/eslint ~/.cursor/skills/eslint
+cp -R vendor/nauten/agent-skills/skills/general ~/.cursor/skills/general
 cp -R vendor/nauten/agent-skills/skills/laravel ~/.cursor/skills/laravel
 cp -R vendor/nauten/agent-skills/skills/php ~/.cursor/skills/php
 cp -R vendor/nauten/agent-skills/skills/react ~/.cursor/skills/react
