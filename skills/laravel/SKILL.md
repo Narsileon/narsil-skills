@@ -26,6 +26,17 @@ Blade View Components (`app/View/Components/` + `.blade.php`): follow [blade](..
 
 - Helpers: singleton in container + `final` facade in `app/Facades/` — no `app('…')`.
 - Queries: `User::EMAIL`, never `'email'`.
+- Prefer facades / support classes over global magic helpers — easier to IDE-jump, mock, and grep:
+
+  | Prefer | Avoid |
+  | ------ | ----- |
+  | `Cache::get()` / `Cache::remember()` / `Cache::put()` | `cache()` / `cache()->…` |
+  | `Arr::get()` / `Arr::set()` | `data_get()` / `data_set()` |
+  | `Str::contains()` / `Str::lower()` / `Str::replace()` | `str_contains()` / `strtolower()` / `str_replace()` |
+  | `Collection::make()` | raw `array_*` loops when a Collection API fits |
+
+- Prefer Laravel support APIs (`Illuminate\Support\Arr`, `Str`, `Collection`, facades) over raw PHP string/array functions when an equivalent exists — Laravel maintains those shims across PHP versions, so app code stays stable if PHP renames or deprecates builtins.
+- Import facades and support classes in the `USE` region (`use Illuminate\Support\Facades\Cache;`, `use Illuminate\Support\Arr;`, …) — never call them via FQCN mid-file.
 
 ## Model
 
