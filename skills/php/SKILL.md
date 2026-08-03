@@ -10,10 +10,10 @@ description: >-
 
 Copy templates into the target project. The stub is the contract — match its `#region` markers, PHPDoc, brace style, and sort order.
 
-| Artifact | Template | Regions |
-| -------- | -------- | ------- |
-| Class (service, helper, component) | [class.stub](templates/class.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PRIVATE METHODS` |
-| Enum (backed string/int) | [enum.stub](templates/enum.stub) | `USE` (if needed) → `CASES` → methods regions as needed |
+| Artifact                                      | Template                           | Regions                                                                                   |
+| --------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- |
+| Class (service, helper, component, widget, …) | [class.stub](templates/class.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PRIVATE METHODS` |
+| Enum (backed string/int)                      | [enum.stub](templates/enum.stub)   | `USE` (if needed) → `CASES` → methods regions as needed                                   |
 
 ## Class
 
@@ -27,7 +27,8 @@ Copy templates into the target project. The stub is the contract — match its `
 - Constants, properties, and methods sorted alphabetically within each region (`__construct` in `CONSTRUCTOR`).
 - Associative arrays in `return` / response payloads sorted alphabetically by key.
 - PHPDoc: `boolean`, `integer`, `double`; `string[]` not `list<string>`; `array<string,mixed>` for maps (no space after `,` — VS Code resolves generics better). Every method gets `@param` / `@return` (including `private`). Constructor: all `@param` + `@return void`. Properties/constants: `@var` only. Avoid prose summaries (e.g. `Language column keys matching the TCA fields.`) — not forbidden, but methods and vars should already be self-descriptive.
-- Overrides (Laravel, TYPO3, etc.): if the parent already has PHPDoc, use only `{@inheritDoc}` — do not restate `@param` / `@return`. Use `{@inheritDoc}` only when the parent PHPDoc exists; otherwise write full PHPDoc. Match the parent's native parameter/return types — do not add types the parent left untyped.
+- **When modifying a function, re-check types that are already written** — native parameter/return types and existing `@param` / `@return` / `@var`. Verify they still match the implementation after your change (e.g. do not keep `@return string|View` if the method now only returns a `View`). Do not invent looser unions “just in case”; narrow or update types to what the code actually returns/accepts. Prefer keeping accurate existing types over dropping them during a reformat.
+- Overrides (Laravel, TYPO3, etc.): if the parent already has PHPDoc, use only `{@inheritDoc}` — do not restate `@param` / `@return`. Use `{@inheritDoc}` only when the parent PHPDoc exists; otherwise write full PHPDoc. Match the parent's native parameter/return types — do not add types the parent left untyped, unless you are also correcting an inaccurate documented type to match the real implementation (see above).
 - `{` on its own line after `if`, `foreach`, closures. Always braces — never `if ($lang === 'zh') return $this->getZh();`. Prefer `match` or `switch` when branching on one value fits better. No empty line right after `{` or right before `}`.
 - Import every type with `use` in the `USE` region — never inline FQCNs (e.g. `\TYPO3\CMS\Extbase\Persistence\QueryInterface`).
 - No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.

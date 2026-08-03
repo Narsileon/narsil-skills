@@ -1,10 +1,11 @@
 ---
 name: laravel
 description: >-
-  Laravel PHP style for Eloquent models and migrations. Use when creating or
-  editing PHP in database/migrations/, seeders, Eloquent models, or when the
-  user mentions model TABLE constants or migration stubs. For general PHP
-  classes, follow the php skill first.
+  Laravel PHP style for Eloquent models, migrations, facades, and support APIs
+  (Cache/Arr/Str over magic helpers and raw PHP). Use when creating or editing
+  PHP in database/migrations/, seeders, Eloquent models, app services, or when
+  the user mentions model TABLE constants, migration stubs, Cache::, or Arr::get.
+  For general PHP classes, follow the php skill first.
 ---
 
 # Laravel
