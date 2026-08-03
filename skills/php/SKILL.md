@@ -1,18 +1,19 @@
 ---
 name: php
 description: >-
-  PHP style for service classes and similar artifacts. Use when creating or
-  editing PHP classes, when the user mentions PHP regions, PHPDoc, brace style,
-  or class stubs.
+  PHP style for service classes, enums, and similar artifacts. Use when creating
+  or editing PHP classes or enums, when the user mentions PHP regions, PHPDoc,
+  brace style, or class/enum stubs.
 ---
 
 # PHP
 
-Copy [templates/class.stub](templates/class.stub) into the target project. The stub is the contract — match its `#region` markers, PHPDoc, brace style, and sort order.
+Copy templates into the target project. The stub is the contract — match its `#region` markers, PHPDoc, brace style, and sort order.
 
 | Artifact | Template | Regions |
 | -------- | -------- | ------- |
 | Class (service, helper, component) | [class.stub](templates/class.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PRIVATE METHODS` |
+| Enum (backed string/int) | [enum.stub](templates/enum.stub) | `USE` (if needed) → `CASES` → methods regions as needed |
 
 ## Class
 
@@ -32,3 +33,10 @@ Copy [templates/class.stub](templates/class.stub) into the target project. The s
 - No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.
 - No ternary (`$x ? $y : $z`); use `if` / `else` blocks — easier to breakpoint while debugging.
 - Name variables clearly — never `$e`, `$ex`, `$err`, `$i`, `$j`, `$k`. Prefer `$exception`, `$error`, `$throwable`, `$index`, `$key`, etc.
+
+## Enum
+
+- Backed enums (`string` / `integer`) unless a pure unit enum is clearly better.
+- Cases in a `CASES` region, sorted alphabetically; each case has `@var` PHPDoc matching the backing type.
+- No blank line between cases — only the PHPDoc block directly above each `case` (see [enum.stub](templates/enum.stub)).
+- Methods (if any) follow the same region/PHPDoc/brace rules as classes; keep cases before methods.

@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Enums;
+
+enum CacheKey: string
+{
+    #region CASES
+
+    /**
+     * @var string
+     */
+    case FRAGMENTS = 'app.fragments';
+    /**
+     * @var string
+     */
+    case LOCALES = 'app.locales';
+    /**
+     * @var string
+     */
+    case USERS = 'app.users';
+
+    #endregion
+}
