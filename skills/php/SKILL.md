@@ -21,7 +21,8 @@ Copy templates into the target project. The stub is the contract — match its `
 - `final` (or `abstract` base).
 - No constructor property promotion — never declare properties on `__construct` parameters (e.g. `__construct(private CacheRepository $cache)`). Declare every property in `PROPERTIES` (typed + `@var`), then assign in `__construct` with `$this->property = $value`.
 - `final` on constants by default (`private final const`, `public final const`) — even when the class is `final`; omit only when a subclass must override the constant.
-- Do not mark methods `final` when the class is already `final` (redundant).
+- Never mark `private` methods `final` — they are not visible to subclasses, so they cannot be overridden (`final private` is always wrong; PHP warns).
+- Do not mark methods `final` when the class is already `final` (redundant). Use `final` on methods only for `public` / `protected` methods on a non-`final` class that must not be overridden.
 - `#region` / `#endregion` only — never `// region`.
 - `use` statements sorted alphabetically in the `USE` region.
 - Constants, properties, and methods sorted alphabetically within each region (`__construct` in `CONSTRUCTOR`).
@@ -35,6 +36,7 @@ Copy templates into the target project. The stub is the contract — match its `
 - Import every type with `use` in the `USE` region — never inline FQCNs (e.g. `\TYPO3\CMS\Extbase\Persistence\QueryInterface`).
 - No arrow functions (`fn () =>`); use named methods or `function () { … }` closures.
 - No ternary (`$x ? $y : $z`); use `if` / `else` blocks — easier to breakpoint while debugging.
+- No space after unary `!` (or `@`, `~`, `++`, `--`): `!is_array($value)`, never `! is_array($value)`.
 - Name variables clearly — never `$e`, `$ex`, `$err`, `$i`, `$j`, `$k`. Prefer `$exception`, `$error`, `$throwable`, `$index`, `$key`, etc.
 
 ## Enum
