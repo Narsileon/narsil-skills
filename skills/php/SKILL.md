@@ -45,3 +45,7 @@ Copy templates into the target project. The stub is the contract — match its `
 - Cases in a `CASES` region, sorted alphabetically; each case has `@var` PHPDoc matching the backing type.
 - No blank line between cases — only the PHPDoc block directly above each `case` (see [enum.stub](templates/enum.stub)).
 - Methods (if any) follow the same region/PHPDoc/brace rules as classes; keep cases before methods.
+
+## Validation
+
+After creating or editing PHP classes, run a short `composer dump-autoload` in the project root to confirm Composer/autoload still resolves. Fix any failures before finishing.
