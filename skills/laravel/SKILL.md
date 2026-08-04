@@ -12,7 +12,7 @@ description: >-
 
 PHP class style: follow [php](../php/SKILL.md) first — regions, PHPDoc, brace style, and [class.stub](../php/templates/class.stub).
 
-Copy [templates/](templates/) into the target project. The stub is the contract — match its `#region` markers, PHPDoc, brace style, and sort order.
+Copy [templates/](templates/) into the target project. The stub is the contract — match its `#region` names, PHPDoc, brace style, and sort order. Never write empty regions (see [php](../php/SKILL.md)).
 
 | Artifact | Template | Regions |
 | -------- | -------- | ------- |

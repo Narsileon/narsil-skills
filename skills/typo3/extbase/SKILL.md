@@ -10,7 +10,7 @@ description: >-
 
 PHP style: follow [php](../../php/SKILL.md).
 
-Copy [templates/](templates/) into the target project when scaffolding Extbase models. The stub is the contract — match its `#region` markers, PHPDoc, brace style, and sort order.
+Copy [templates/](templates/) into the target project when scaffolding Extbase models. The stub is the contract — match its `#region` names, PHPDoc, brace style, and sort order. Never write empty regions (see [php](../../php/SKILL.md)).
 
 | Artifact | Template | Regions |
 | -------- | -------- | ------- |

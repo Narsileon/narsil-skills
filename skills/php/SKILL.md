@@ -8,7 +8,7 @@ description: >-
 
 # PHP
 
-Copy templates into the target project. The stub is the contract — match its `#region` markers, PHPDoc, brace style, and sort order.
+Copy templates into the target project. The stub is the contract — match its `#region` names, PHPDoc, brace style, and sort order. Region lists below are order when present, not a checklist of empty shells.
 
 | Artifact                                      | Template                           | Regions                                                                                   |
 | --------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- |
@@ -24,6 +24,7 @@ Copy templates into the target project. The stub is the contract — match its `
 - Never mark `private` methods `final` — they are not visible to subclasses, so they cannot be overridden (`final private` is always wrong; PHP warns).
 - Do not mark methods `final` when the class is already `final` (redundant). Use `final` on methods only for `public` / `protected` methods on a non-`final` class that must not be overridden.
 - `#region` / `#endregion` only — never `// region`.
+- **Never write an empty region** — omit `#region` / `#endregion` entirely when that section has no members (no empty `CONSTRUCTOR`, `CONSTANTS`, `PROPERTIES`, `PRIVATE METHODS`, or `USE`). Only emit a region that contains at least one `use`, constant, property, or method. Keep relative order from the table above for regions that do exist.
 - `use` statements sorted alphabetically in the `USE` region.
 - Constants, properties, and methods sorted alphabetically within each region (`__construct` in `CONSTRUCTOR`).
 - Associative arrays in `return` / response payloads sorted alphabetically by key.

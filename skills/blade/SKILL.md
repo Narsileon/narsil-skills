@@ -10,7 +10,7 @@ description: >-
 # Blade
 
 HTML / markup spacing: follow [html](../html/SKILL.md).
-PHP class style: follow [php](../php/SKILL.md) — regions, PHPDoc, brace style, [class.stub](../php/templates/class.stub).
+PHP class style: follow [php](../php/SKILL.md) — regions (omit empty ones), PHPDoc, brace style, [class.stub](../php/templates/class.stub).
 Tailwind tokens: follow [tailwind](../tailwind/SKILL.md).
 
 Copy [templates/](templates/) into the target project. The stubs are the contract.
