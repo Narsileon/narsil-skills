@@ -74,7 +74,7 @@ Put base classes and variant maps in `@php`, merge with `twMerge`, apply via `$a
         },
     );
 @endphp
-<button {{ $attributes->twMerge($class) }} data-slot="button" type="button">
+<button data-slot="button" {{ $attributes->twMerge($class) }} type="button">
     {{ $slot }}
 </button>
 ```

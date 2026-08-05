@@ -83,7 +83,7 @@ type UserData = {
 
 ### JSX prop order
 
-On JSX elements, sort props in this order:
+Same order as [html](../html/SKILL.md) attributes, with JSX names:
 
 1. `ref`
 2. `data-*` (e.g. `data-slot`)
