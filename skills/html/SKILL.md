@@ -35,12 +35,14 @@ Good:
 
 On elements, sort attributes in this order:
 
-1. `data-*` (e.g. `data-slot`)
-2. `class` (Blade: `$attributes->twMerge(…)` when that expression owns the class merge)
-3. Rest — other attributes alphabetically, then attribute bag if any
+1. `id`
+2. `data-*` (e.g. `data-slot`)
+3. `class` (Blade: `$attributes->twMerge(…)` when that expression owns the class merge)
+4. Rest — other attributes alphabetically, then attribute bag if any
 
 ```html
 <button
+  id="nav-filter"
   data-slot="button"
   class="inline-flex"
   type="button"
@@ -48,7 +50,7 @@ On elements, sort attributes in this order:
 ```
 
 ```blade
-<button data-slot="button" {{ $attributes->twMerge($class) }} type="button">
+<button id="nav-filter" data-slot="button" {{ $attributes->twMerge($class) }} type="button">
 ```
 
-JSX maps `class` → `className` and adds `ref` first / `key` last — see [react](../react/SKILL.md).
+JSX maps `class` → `className` and adds `ref` before `id` / `key` last — see [react](../react/SKILL.md).

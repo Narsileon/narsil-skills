@@ -86,14 +86,16 @@ type UserData = {
 Same order as [html](../html/SKILL.md) attributes, with JSX names:
 
 1. `ref`
-2. `data-*` (e.g. `data-slot`)
-3. `className`
-4. Rest — other props alphabetically, then `{...spread}` if any
-5. `key` (always last)
+2. `id`
+3. `data-*` (e.g. `data-slot`)
+4. `className`
+5. Rest — other props alphabetically, then `{...spread}` if any
+6. `key` (always last)
 
 ```tsx
 <button
   ref={ref}
+  id="nav-filter"
   data-slot="button"
   className={className}
   onClick={handleClick}
