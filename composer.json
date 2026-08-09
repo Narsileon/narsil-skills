@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "narsil/narsil-skills",
+    "name": "narsil/skills",
     "type": "library",
     "description": "Cursor agent skills and templates for Blade, ESLint, HTML, Laravel, PHP, React/TypeScript, and Tailwind",
     "keywords": [

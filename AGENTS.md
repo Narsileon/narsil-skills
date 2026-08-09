@@ -10,19 +10,19 @@
 | `skills/php/` | PHP — [SKILL.md](skills/php/SKILL.md) + [templates/](skills/php/templates/) |
 | `skills/react/` | React — [SKILL.md](skills/react/SKILL.md) (imports [html](skills/html/SKILL.md), [tailwind](skills/tailwind/SKILL.md)) |
 | `skills/tailwind/` | Tailwind — [SKILL.md](skills/tailwind/SKILL.md) |
-**Consumer project** (`composer require --dev narsil/narsil-skills`): add one link per stack to that project's `AGENTS.md`. Do not copy rules here. If the project skips `vendor/`, add an exception for `vendor/narsil/narsil-skills/`.
+**Consumer project** (`composer require --dev narsil/skills`): add one link per stack to that project's `AGENTS.md`. Do not copy rules here. If the project skips `vendor/`, add an exception for `vendor/narsil/skills/`.
 
 ```markdown
-| `vendor/narsil/narsil-skills/skills/` | Agent skills + templates (exception to vendor skip) |
+| `vendor/narsil/skills/skills/` | Agent skills + templates (exception to vendor skip) |
 
-General: follow the [general](vendor/narsil/narsil-skills/skills/general/SKILL.md) skill.
-Blade: follow the [blade](vendor/narsil/narsil-skills/skills/blade/SKILL.md) skill.
-ESLint: follow the [eslint](vendor/narsil/narsil-skills/skills/eslint/SKILL.md) skill.
-HTML: follow the [html](vendor/narsil/narsil-skills/skills/html/SKILL.md) skill.
-Laravel: follow the [laravel](vendor/narsil/narsil-skills/skills/laravel/SKILL.md) skill.
-PHP style: follow the [php](vendor/narsil/narsil-skills/skills/php/SKILL.md) skill.
-React style: follow the [react](vendor/narsil/narsil-skills/skills/react/SKILL.md) skill.
-Tailwind: follow the [tailwind](vendor/narsil/narsil-skills/skills/tailwind/SKILL.md) skill.
+General: follow the [general](vendor/narsil/skills/skills/general/SKILL.md) skill.
+Blade: follow the [blade](vendor/narsil/skills/skills/blade/SKILL.md) skill.
+ESLint: follow the [eslint](vendor/narsil/skills/skills/eslint/SKILL.md) skill.
+HTML: follow the [html](vendor/narsil/skills/skills/html/SKILL.md) skill.
+Laravel: follow the [laravel](vendor/narsil/skills/skills/laravel/SKILL.md) skill.
+PHP style: follow the [php](vendor/narsil/skills/skills/php/SKILL.md) skill.
+React style: follow the [react](vendor/narsil/skills/skills/react/SKILL.md) skill.
+Tailwind: follow the [tailwind](vendor/narsil/skills/skills/tailwind/SKILL.md) skill.
 ```
 
 Pick the stack links that apply (e.g. always `general`; Laravel + Blade: `php` + `laravel` + `html` + `blade` + `tailwind`; React: `html` + `react` + `tailwind`).
