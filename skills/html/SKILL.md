@@ -2,7 +2,7 @@
 name: html
 description: >-
   HTML and markup spacing and attribute order. Use when editing HTML, Fluid,
-  Blade, or JSX markup, or when React/TYPO3 skills import this skill.
+  Blade, or JSX markup, or when React skills import this skill.
 ---
 
 # HTML

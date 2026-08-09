@@ -1,8 +1,8 @@
 {
   "$schema": "https://getcomposer.org/schema.json",
-  "name": "nauten/agent-skills",
+  "name": "narsileon/narsil-skills",
   "type": "library",
-  "description": "Cursor agent skills and templates for Blade, ESLint, HTML, Laravel, PHP, React/TypeScript, Tailwind, and TYPO3",
+  "description": "Cursor agent skills and templates for Blade, ESLint, HTML, Laravel, PHP, React/TypeScript, and Tailwind",
   "keywords": [
     "agent",
     "blade",
@@ -15,7 +15,6 @@
     "react",
     "skills",
     "tailwind",
-    "typo3",
     "typescript"
   ],
   "license": "MIT",
@@ -28,8 +27,7 @@
       "laravel": "skills/laravel/SKILL.md",
       "php": "skills/php/SKILL.md",
       "react": "skills/react/SKILL.md",
-      "tailwind": "skills/tailwind/SKILL.md",
-      "typo3": "skills/typo3/SKILL.md"
+      "tailwind": "skills/tailwind/SKILL.md"
     }
   }
 }
