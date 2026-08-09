@@ -1,33 +1,33 @@
 {
-  "$schema": "https://getcomposer.org/schema.json",
-  "name": "narsileon/narsil-skills",
-  "type": "library",
-  "description": "Cursor agent skills and templates for Blade, ESLint, HTML, Laravel, PHP, React/TypeScript, and Tailwind",
-  "keywords": [
-    "agent",
-    "blade",
-    "cursor",
-    "eslint",
-    "general",
-    "html",
-    "laravel",
-    "php",
-    "react",
-    "skills",
-    "tailwind",
-    "typescript"
-  ],
-  "license": "MIT",
-  "extra": {
-    "agent-skills": {
-      "blade": "skills/blade/SKILL.md",
-      "eslint": "skills/eslint/SKILL.md",
-      "general": "skills/general/SKILL.md",
-      "html": "skills/html/SKILL.md",
-      "laravel": "skills/laravel/SKILL.md",
-      "php": "skills/php/SKILL.md",
-      "react": "skills/react/SKILL.md",
-      "tailwind": "skills/tailwind/SKILL.md"
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "narsil/narsil-skills",
+    "type": "library",
+    "description": "Cursor agent skills and templates for Blade, ESLint, HTML, Laravel, PHP, React/TypeScript, and Tailwind",
+    "keywords": [
+        "agent",
+        "blade",
+        "cursor",
+        "eslint",
+        "general",
+        "html",
+        "laravel",
+        "php",
+        "react",
+        "skills",
+        "tailwind",
+        "typescript"
+    ],
+    "license": "MIT",
+    "extra": {
+        "agent-skills": {
+            "blade": "skills/blade/SKILL.md",
+            "eslint": "skills/eslint/SKILL.md",
+            "general": "skills/general/SKILL.md",
+            "html": "skills/html/SKILL.md",
+            "laravel": "skills/laravel/SKILL.md",
+            "php": "skills/php/SKILL.md",
+            "react": "skills/react/SKILL.md",
+            "tailwind": "skills/tailwind/SKILL.md"
+        }
     }
-  }
 }

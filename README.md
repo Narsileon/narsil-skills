@@ -15,7 +15,7 @@ Add the GitHub repository, then require the package as a dev dependency:
     }
   ],
   "require-dev": {
-    "narsileon/narsil-skills": "^1.0"
+    "narsil/narsil-skills": "^1.0"
   }
 }
 ```
@@ -31,33 +31,33 @@ Local development (path repo):
     }
   ],
   "require-dev": {
-    "narsileon/narsil-skills": "@dev"
+    "narsil/narsil-skills": "@dev"
   }
 }
 ```
 
 ```bash
-composer update narsileon/narsil-skills
+composer update narsil/narsil-skills
 ```
 
 ## Deployment / CI
 
-`narsileon/narsil-skills` is **require-dev only** — production and deploy pipelines must use:
+`narsil/narsil-skills` is **require-dev only** — production and deploy pipelines must use:
 
 ```bash
 composer install --no-dev --optimize-autoloader
 ```
 
-Deploy servers do not need repository access to `narsileon/narsil-skills`. Local dev: `composer install` (with dev dependencies).
+Deploy servers do not need repository access to `narsil/narsil-skills`. Local dev: `composer install` (with dev dependencies).
 
 ## Install globally (optional)
 
 ```bash
-cp -R vendor/narsileon/narsil-skills/skills/blade ~/.cursor/skills/blade
-cp -R vendor/narsileon/narsil-skills/skills/eslint ~/.cursor/skills/eslint
-cp -R vendor/narsileon/narsil-skills/skills/general ~/.cursor/skills/general
-cp -R vendor/narsileon/narsil-skills/skills/laravel ~/.cursor/skills/laravel
-cp -R vendor/narsileon/narsil-skills/skills/php ~/.cursor/skills/php
-cp -R vendor/narsileon/narsil-skills/skills/react ~/.cursor/skills/react
-cp -R vendor/narsileon/narsil-skills/skills/tailwind ~/.cursor/skills/tailwind
+cp -R vendor/narsil/narsil-skills/skills/blade ~/.cursor/skills/blade
+cp -R vendor/narsil/narsil-skills/skills/eslint ~/.cursor/skills/eslint
+cp -R vendor/narsil/narsil-skills/skills/general ~/.cursor/skills/general
+cp -R vendor/narsil/narsil-skills/skills/laravel ~/.cursor/skills/laravel
+cp -R vendor/narsil/narsil-skills/skills/php ~/.cursor/skills/php
+cp -R vendor/narsil/narsil-skills/skills/react ~/.cursor/skills/react
+cp -R vendor/narsil/narsil-skills/skills/tailwind ~/.cursor/skills/tailwind
 ```
