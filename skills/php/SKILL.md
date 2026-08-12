@@ -20,8 +20,8 @@ Copy templates into the target project. The stub is the contract — match its `
 - Every PHP file starts with `<?php` then `declare(strict_types=1);` (blank line after each).
 - `final` (or `abstract` base).
 - No constructor property promotion — never declare properties on `__construct` parameters (e.g. `__construct(private CacheRepository $cache)`). Declare every property in `PROPERTIES` (typed + `@var`), then assign in `__construct` with `$this->property = $value`.
-- `final` on constants by default (`private final const`, `public final const`) — even when the class is `final`; omit only when a subclass must override the constant.
-- Never mark `private` methods `final` — they are not visible to subclasses, so they cannot be overridden (`final private` is always wrong; PHP warns).
+- `final` on `public` / `protected` constants by default (`public final const`, `protected final const`) — even when the class is `final`; omit only when a subclass must override the constant. **Never `private final const`** — PHP fatal: private constants cannot be `final` (use `private const` only).
+- Never mark `private` methods or properties `final` — they are not visible to subclasses (`private final` on methods warns; on properties/constants is invalid). Do not copy Java’s `private final` field pattern.
 - Do not mark methods `final` when the class is already `final` (redundant). Use `final` on methods only for `public` / `protected` methods on a non-`final` class that must not be overridden.
 - `#region` / `#endregion` only — never `// region`.
 - **Never write an empty region** — omit `#region` / `#endregion` entirely when that section has no members (no empty `CONSTRUCTOR`, `CONSTANTS`, `PROPERTIES`, `PRIVATE METHODS`, or `USE`). Only emit a region that contains at least one `use`, constant, property, or method. Keep relative order from the table above for regions that do exist.
