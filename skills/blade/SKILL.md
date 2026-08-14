@@ -32,6 +32,7 @@ components/
   icons/{icon-name}.blade.php
   {block-name}.blade.php
   {block-name}/{subblock-name}.blade.php
+  {page-name}/{subblock-name}.blade.php
 layouts/
 mail/
 pages/
@@ -43,9 +44,10 @@ pages/
 | `components/icons/{name}.blade.php` | Icon | SVG markup only |
 | `components/{block}.blade.php` | Block | UI and subblocks |
 | `components/{block}/{subblock}.blade.php` | Subblock | UI |
+| `components/{page}/{subblock}.blade.php` | Page subblock (repeated on that page) | UI |
 | `layouts/` | Page layouts | |
 | `mail/` | Mail templates | |
-| `pages/` | Pages | Layouts + blocks |
+| `pages/` | Pages | Layouts + blocks + page subblocks |
 
 ```blade
 {{-- components/hero.blade.php → <x-hero> --}}
@@ -55,7 +57,13 @@ pages/
 </section>
 ```
 
-Do not nest deeper than `{block}/{subblock}`. Do not put blocks in `ui/` or `icons/`.
+```blade
+{{-- pages/home.blade.php repeats a page-scoped block --}}
+<x-home.feature-card :title="$title" />
+{{-- components/home/feature-card.blade.php → <x-home.feature-card> --}}
+```
+
+Do not nest deeper than `{block}/{subblock}` or `{page}/{subblock}`. Do not add `components/{page}.blade.php` — pages live in `pages/`. Do not put blocks in `ui/` or `icons/`.
 
 ## Install tailwind-merge
 
@@ -88,10 +96,10 @@ Do **not** use `$attributes->merge(['class' => '…'])` for Tailwind — it does
 
 ## Component class
 
-- `final class` matching the view path: `App\View\Components\Ui\Button`, `App\View\Components\Icons\Check`, `App\View\Components\Hero`, `App\View\Components\Hero\Cta` (or package namespace). Icons may be anonymous Blade (no class) when they are SVG-only.
+- `final class` matching the view path: `App\View\Components\Ui\Button`, `App\View\Components\Icons\Check`, `App\View\Components\Hero`, `App\View\Components\Hero\Cta`, `App\View\Components\Home\FeatureCard` (or package namespace). Icons may be anonymous Blade (no class) when they are SVG-only.
 - Follow [php](../php/SKILL.md): no constructor property promotion; typed props in `PROPERTIES`; assign in `__construct`.
 - Public props for anything the view needs (`$variant`, `$size`, …).
-- `render(): View` returns the matching view (`view('components.ui.button')`, `view('components.icons.check')`, `view('components.hero')`, `view('components.hero.cta')`).
+- `render(): View` returns the matching view (`view('components.ui.button')`, `view('components.icons.check')`, `view('components.hero')`, `view('components.hero.cta')`, `view('components.home.feature-card')`).
 
 ## Component Blade — classes & variants
 
@@ -123,4 +131,4 @@ Put base classes and variant maps in `@php`, merge with `twMerge`, apply via `$a
 ## File names
 
 - Blade: kebab-case (`button.blade.php`, `alert-dialog.blade.php`).
-- PHP class: PascalCase matching the path (`Ui/Button.php` → `<x-ui.button>`, `Icons/Check.php` → `<x-icons.check>`, `Hero.php` → `<x-hero>`, `Hero/Cta.php` → `<x-hero.cta>`).
+- PHP class: PascalCase matching the path (`Ui/Button.php` → `<x-ui.button>`, `Icons/Check.php` → `<x-icons.check>`, `Hero.php` → `<x-hero>`, `Hero/Cta.php` → `<x-hero.cta>`, `Home/FeatureCard.php` → `<x-home.feature-card>`).
