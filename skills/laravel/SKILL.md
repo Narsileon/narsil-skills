@@ -21,7 +21,7 @@ Copy [templates/](templates/) into the target project. The stub is the contract 
 
 Use [class.stub](../php/templates/class.stub) for `final` classes in `app/Helpers/`, `app/Services/`, and similar.
 
-Blade View Components (`app/View/Components/` + `.blade.php`): follow [blade](../blade/SKILL.md) (imports `php`, `html`, `tailwind`).
+Blade views (`resources/views/` — `components/ui`, `components/icons`, blocks, subblocks, `layouts/`, `mail/`, `pages/`): follow [blade](../blade/SKILL.md) (imports `php`, `html`, `tailwind`).
 
 ## Laravel class additions
 

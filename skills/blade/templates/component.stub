@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\View\Components;
+namespace App\View\Components\Ui;
 
 #region USE
 
@@ -50,7 +50,7 @@ final class Button extends Component
      */
     public function render(): View
     {
-        return view('components.button');
+        return view('components.ui.button');
     }
 
     #endregion
