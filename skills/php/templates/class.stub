@@ -55,7 +55,11 @@ final class UserService
     public function findByEmail(string $email): ?User
     {
         return User::query()
-            ->where(User::EMAIL, '=', $email)
+            ->where(
+                column: User::EMAIL, 
+                operator: '=', 
+                value: $email
+            )
             ->first();
     }
 
@@ -67,7 +71,11 @@ final class UserService
     public function findById(int $id): ?User
     {
         return User::query()
-            ->where(User::ID, '=', $id)
+            ->where(
+                column: User::ID, 
+                operator: '=', 
+                value: $id
+            )
             ->first();
     }
 

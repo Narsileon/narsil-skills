@@ -26,7 +26,7 @@ Blade views (`resources/views/` — `components/ui`, `components/icons`, blocks,
 ## Laravel class additions
 
 - Helpers: singleton in container + `final` facade in `app/Facades/` — no `app('…')`.
-- Queries: `User::EMAIL`, never `'email'`.
+- Database table and column names always come from model constants — `User::TABLE`, `User::EMAIL`, never `'users'` or `'email'` string literals in application code, queries, relationships, or migrations. Define missing table/column constants on the model before using them.
 - Prefer facades / support classes over global magic helpers — easier to IDE-jump, mock, and grep:
 
   | Prefer | Avoid |
@@ -41,7 +41,7 @@ Blade views (`resources/views/` — `components/ui`, `components/icons`, blocks,
 
 ## Model
 
-- `TABLE` + columns/relations as `public final const` in `CONSTANTS` (`TABLE` first; nested `#region • COLUMNS` / `• RELATIONS`, alphabetical inside each). Omit `final` on a constant only when a subclass must override it.
+- `TABLE` + every database column used by the application + relations as `public final const` in `CONSTANTS` (`TABLE` first; nested `#region • COLUMNS` / `• RELATIONS`, alphabetical inside each). Omit `final` on a constant only when a subclass must override it.
 - Always PHPDoc on model constants: standard description + `@var string` (e.g. `The name of the "email" column.`) — columns are conventionally commented this way (see [model.stub](templates/model.stub)).
 - `$this->table = self::TABLE` in constructor; constants only in queries/relations.
 
