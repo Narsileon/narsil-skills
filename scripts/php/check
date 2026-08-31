@@ -38,6 +38,11 @@ if ! command -v php >/dev/null 2>&1; then
     exit 2
 fi
 
+if ! command -v grep >/dev/null 2>&1 || ! command -v awk >/dev/null 2>&1; then
+    printf 'grep and awk are required but were not found in PATH.\n' >&2
+    exit 2
+fi
+
 php_files=()
 
 if ((${#paths[@]} == 0)); then
@@ -84,27 +89,46 @@ if ((${#php_files[@]} > 0)); then
             file_failures=$((file_failures + 1))
         fi
 
-        if rg -n '(^|[[:space:]])//[[:space:]]*region\b|\bfn[[:space:]]*\(' "$file" >/dev/null; then
+        if grep -Eq '(^|[[:space:]])//[[:space:]]*region([[:space:]]|$)|(^|[^[:alnum:]_])fn[[:space:]]*\(' "$file"; then
             printf 'FAIL forbidden syntax: %s (// region comments and arrow functions are not allowed)\n' "$file"
             file_failures=$((file_failures + 1))
         fi
 
-        if rg -n '\bprivate[[:space:]]+final[[:space:]]+(const|function|[A-Za-z_])' "$file" >/dev/null; then
+        if grep -Eq '(^|[^[:alnum:]_])private[[:space:]]+final[[:space:]]+(const|function|[A-Za-z_])' "$file"; then
             printf 'FAIL private final member: %s\n' "$file"
             file_failures=$((file_failures + 1))
         fi
 
-        if rg -n -P '\b(public|protected)\s+(?!final\s+)const\b' "$file" >/dev/null; then
+        if grep -Eq '(^|[^[:alnum:]_])(public|protected)[[:space:]]+const([[:space:]]|$)' "$file"; then
             printf 'FAIL missing final: %s (public/protected constants must be final)\n' "$file"
             file_failures=$((file_failures + 1))
         fi
 
-        if rg -n -U '#region[[:space:]]+[A-Z_]+[[:space:]]*\n[[:space:]]*#endregion' "$file" >/dev/null; then
+        if awk '
+            /#region[[:space:]]+[A-Z_]+[[:space:]]*$/ { in_region = 1; next }
+            in_region && /^[[:space:]]*#endregion[[:space:]]*$/ { found = 1; exit }
+            in_region && !/^[[:space:]]*$/ { in_region = 0 }
+            END { exit(found ? 0 : 1) }
+        ' "$file"; then
             printf 'FAIL empty region: %s\n' "$file"
             file_failures=$((file_failures + 1))
         fi
 
-        if rg -n -U '__construct[[:space:]]*\([^)]*\b(public|protected|private)[[:space:]]+' "$file" >/dev/null; then
+        if awk '
+            /__construct[[:space:]]*\(/ { in_constructor = 1; constructor = $0; next }
+            in_constructor {
+                constructor = constructor $0
+                if ($0 ~ /\)/) {
+                    if (constructor ~ /(^|[^[:alnum:]_])(public|protected|private)[[:space:]]+/) {
+                        found = 1
+                        exit
+                    }
+                    in_constructor = 0
+                    constructor = ""
+                }
+            }
+            END { exit(found ? 0 : 1) }
+        ' "$file"; then
             printf 'FAIL constructor promotion: %s\n' "$file"
             file_failures=$((file_failures + 1))
         fi
