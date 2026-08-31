@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Vendor\MyExtension\Domain\Model;
+
+#region USE
+
+use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+
+#endregion
+
+final class Example extends AbstractEntity
+{
+    #region CONSTANTS
+
+    /**
+     * @var string
+     */
+    public final const TABLE = 'tx_myextension_domain_model_example';
+
+    #endregion
+
+    #region PROPERTIES
+
+    /**
+     * @var string
+     */
+    protected string $title = '';
+
+    #endregion
+
+    #region PUBLIC METHODS
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @param string $title
+     *
+     * @return void
+     */
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
+
+    #endregion
+}

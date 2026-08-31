@@ -1,6 +1,6 @@
 # Agent skills
 
-Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for Blade, ESLint, HTML, Laravel, PHP, React, and Tailwind. Skill index and consumer wiring: [AGENTS.md](AGENTS.md).
+Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for Blade, ESLint, HTML, Laravel, PHP, React, Tailwind, and TYPO3. Skill index and consumer wiring: [AGENTS.md](AGENTS.md).
 
 ## Install (Composer)
 
@@ -60,4 +60,5 @@ cp -R vendor/narsil/skills/skills/laravel ~/.cursor/skills/laravel
 cp -R vendor/narsil/skills/skills/php ~/.cursor/skills/php
 cp -R vendor/narsil/skills/skills/react ~/.cursor/skills/react
 cp -R vendor/narsil/skills/skills/tailwind ~/.cursor/skills/tailwind
+cp -R vendor/narsil/skills/skills/typo3 ~/.cursor/skills/typo3
 ```

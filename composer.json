@@ -15,7 +15,8 @@
         "react",
         "skills",
         "tailwind",
-        "typescript"
+        "typescript",
+        "typo3"
     ],
     "license": "MIT",
     "extra": {
@@ -27,7 +28,8 @@
             "laravel": "skills/laravel/SKILL.md",
             "php": "skills/php/SKILL.md",
             "react": "skills/react/SKILL.md",
-            "tailwind": "skills/tailwind/SKILL.md"
+            "tailwind": "skills/tailwind/SKILL.md",
+            "typo3": "skills/typo3/SKILL.md"
         }
     }
 }
