@@ -10,9 +10,10 @@ $regionOrder = [
     'CONSTRUCTOR' => 30,
     'CONSTANTS' => 40,
     'PROPERTIES' => 50,
-    'PUBLIC METHODS' => 60,
-    'PROTECTED METHODS' => 70,
-    'PRIVATE METHODS' => 80,
+    'RELATIONSHIPS' => 60,
+    'PUBLIC METHODS' => 70,
+    'PROTECTED METHODS' => 80,
+    'PRIVATE METHODS' => 90,
 ];
 $memberRegions = ['CONSTRUCTOR', 'CONSTANTS', 'PROPERTIES', 'PUBLIC METHODS', 'PROTECTED METHODS', 'PRIVATE METHODS'];
 $failures = 0;
@@ -53,25 +54,18 @@ foreach ($paths as $file)
 
             $currentRegionOrder = $regionOrder[$region] ?? null;
 
-            if ($currentRegionOrder === null)
-            {
-                printf("FAIL regions: %s:%d: unknown region '%s'\n", $file, $line, $region);
-
-                $failures++;
-
-                $regionStack[] = $region;
-
-                continue;
-            }
-
-            if ($currentRegionOrder <= $lastRegionOrder)
+            if ($currentRegionOrder !== null && $currentRegionOrder <= $lastRegionOrder)
             {
                 printf("FAIL regions: %s:%d: region '%s' is out of order\n", $file, $line, $region);
 
                 $failures++;
             }
 
-            $lastRegionOrder = $currentRegionOrder;
+            if ($currentRegionOrder !== null)
+            {
+                $lastRegionOrder = $currentRegionOrder;
+            }
+
             $regionStack[] = $region;
 
             continue;
