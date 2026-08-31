@@ -6,19 +6,21 @@ declare(strict_types=1);
 $paths = array_slice($argv, 1);
 $regionOrder = [
     'USE' => 10,
-    'CONSTRUCTOR' => 20,
-    'CONSTANTS' => 30,
-    'PROPERTIES' => 40,
-    'PUBLIC METHODS' => 50,
-    'PRIVATE METHODS' => 60,
+    'CASES' => 20,
+    'CONSTRUCTOR' => 30,
+    'CONSTANTS' => 40,
+    'PROPERTIES' => 50,
+    'PUBLIC METHODS' => 60,
+    'PROTECTED METHODS' => 70,
+    'PRIVATE METHODS' => 80,
 ];
-$memberRegions = ['CONSTRUCTOR', 'CONSTANTS', 'PROPERTIES', 'PUBLIC METHODS', 'PRIVATE METHODS'];
+$memberRegions = ['CONSTRUCTOR', 'CONSTANTS', 'PROPERTIES', 'PUBLIC METHODS', 'PROTECTED METHODS', 'PRIVATE METHODS'];
 $failures = 0;
 
 foreach ($paths as $file)
 {
     $tokens = token_get_all((string)file_get_contents($file));
-    $currentRegion = '';
+    $regionStack = [];
     $lastRegionOrder = 0;
     $members = [];
 
@@ -33,36 +35,56 @@ foreach ($paths as $file)
 
         if ($tokenId === T_COMMENT && preg_match('/^#region\s+(.+)$/', trim($tokenText), $matches) === 1)
         {
-            $currentRegion = trim($matches[1]);
-            $currentRegionOrder = $regionOrder[$currentRegion] ?? null;
+            $region = trim($matches[1]);
+
+            if (str_starts_with($region, '• '))
+            {
+                if ($regionStack === [])
+                {
+                    printf("FAIL regions: %s:%d: nested region '%s' has no parent region\n", $file, $line, $region);
+
+                    $failures++;
+                }
+
+                $regionStack[] = $region;
+
+                continue;
+            }
+
+            $currentRegionOrder = $regionOrder[$region] ?? null;
 
             if ($currentRegionOrder === null)
             {
-                printf("FAIL regions: %s:%d: unknown region '%s'\n", $file, $line, $currentRegion);
+                printf("FAIL regions: %s:%d: unknown region '%s'\n", $file, $line, $region);
 
                 $failures++;
+
+                $regionStack[] = $region;
 
                 continue;
             }
 
             if ($currentRegionOrder <= $lastRegionOrder)
             {
-                printf("FAIL regions: %s:%d: region '%s' is out of order\n", $file, $line, $currentRegion);
+                printf("FAIL regions: %s:%d: region '%s' is out of order\n", $file, $line, $region);
 
                 $failures++;
             }
 
             $lastRegionOrder = $currentRegionOrder;
+            $regionStack[] = $region;
 
             continue;
         }
 
         if ($tokenId === T_COMMENT && trim($tokenText) === '#endregion')
         {
-            $currentRegion = '';
+            array_pop($regionStack);
 
             continue;
         }
+
+        $currentRegion = $regionStack[count($regionStack) - 1] ?? '';
 
         if ($currentRegion === '' || !in_array($currentRegion, $memberRegions, true) || $tokenId !== T_FUNCTION)
         {

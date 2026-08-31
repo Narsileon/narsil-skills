@@ -12,7 +12,7 @@ Copy templates into the target project. The stub is the contract — match its `
 
 | Artifact                                      | Template                           | Regions                                                                                   |
 | --------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------- |
-| Class (service, helper, component, widget, …) | [class.stub](templates/class.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PRIVATE METHODS` |
+| Class (service, helper, component, widget, …) | [class.stub](templates/class.stub) | `USE` → `CONSTRUCTOR` → `CONSTANTS` → `PROPERTIES` → `PUBLIC METHODS` → `PROTECTED METHODS` → `PRIVATE METHODS` |
 | Enum (backed string/int)                      | [enum.stub](templates/enum.stub)   | `USE` (if needed) → `CASES` → methods regions as needed                                   |
 
 ## Class
