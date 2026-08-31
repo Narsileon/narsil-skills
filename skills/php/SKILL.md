@@ -51,4 +51,4 @@ Copy templates into the target project. The stub is the contract — match its `
 
 ## Validation
 
-After creating or editing PHP classes, run `vendor/narsil/skills/scripts/php/check` from the project root. It validates PHP syntax and the mechanically verifiable PHP rules, then confirms Composer/autoload still resolves. Fix any failures before finishing.
+After creating or editing PHP classes, run `vendor/narsil/skills/scripts/php/check` from the project root. It validates PHP syntax, regions, and mechanically verifiable PHP rules, including PHPDoc on every method, property, constant, and enum case. Methods with parameters require one `@param` per parameter, `@return` (including `@return void`), and a blank line between the `@param` block and `@return`. Docblocks must be multiline; inherited methods may use `{@inheritDoc}`. The check then confirms Composer/autoload still resolves. Fix every failure before finishing.

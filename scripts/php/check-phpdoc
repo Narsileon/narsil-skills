@@ -1,0 +1,212 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$failures = 0;
+
+foreach (array_slice($argv, 1) as $file)
+{
+    $contents = (string)file_get_contents($file);
+
+    if (preg_match('/(^|[^A-Za-z0-9_])(class|interface|trait|enum)(\s|$)/', $contents) !== 1)
+    {
+        continue;
+    }
+
+    $fileFailures = 0;
+    $tokens = token_get_all($contents);
+
+    $docBefore = static function (array $tokens, int $startPosition, bool $property = false): ?array
+    {
+        $modifiers = [T_PUBLIC, T_PROTECTED, T_PRIVATE, T_STATIC, T_FINAL, T_ABSTRACT, T_READONLY, T_VAR];
+
+        for ($position = $startPosition - 1; $position >= 0; $position--)
+        {
+            $token = $tokens[$position];
+
+            if (is_array($token) && $token[0] === T_DOC_COMMENT)
+            {
+                return $token;
+            }
+
+            if ($property && ($token === ';' || $token === '{' || $token === '}'))
+            {
+                return null;
+            }
+
+            if (!$property && (!is_array($token) || (!in_array($token[0], $modifiers, true) && $token[0] !== T_WHITESPACE)))
+            {
+                return null;
+            }
+        }
+
+        return null;
+    };
+
+    $check = static function (?array $doc, int $line, string $member, string $tag, array $parameters) use (&$fileFailures, $file): void
+    {
+        if ($doc === null)
+        {
+            printf("FAIL PHPDoc: %s:%d: %s is missing PHPDoc\n", $file, $line, $member);
+
+            $fileFailures++;
+
+            return;
+        }
+
+        $comment = $doc[1];
+        $line = $doc[2];
+        $inherit = preg_match('/\\{@inheritDoc\\}/i', $comment) === 1;
+
+        if (substr_count($comment, "\n") < 2)
+        {
+            printf("FAIL PHPDoc: %s:%d: %s must use a multiline docblock\n", $file, $line, $member);
+
+            $fileFailures++;
+        }
+
+        if (!$inherit && preg_match('/^\s*\*\s*@' . $tag . '\b/m', $comment) !== 1)
+        {
+            printf("FAIL PHPDoc: %s:%d: %s needs @%s\n", $file, $line, $member, $tag);
+
+            $fileFailures++;
+        }
+
+        if ($tag !== 'return' || $inherit)
+        {
+            return;
+        }
+
+        foreach ($parameters as $parameter)
+        {
+            if (preg_match('/^\s*\*\s*@param\b[^\n]*\$' . preg_quote(ltrim($parameter, '$'), '/') . '\b/m', $comment) !== 1)
+            {
+                printf("FAIL PHPDoc: %s:%d: %s needs @param for %s\n", $file, $line, $member, $parameter);
+
+                $fileFailures++;
+            }
+        }
+
+        if ($parameters !== [] && preg_match('/@param\b[^\n]*\n\s*\*\s*\n\s*\*\s*@return\b/m', $comment) !== 1)
+        {
+            printf("FAIL PHPDoc: %s:%d: %s needs a blank line between @param and @return\n", $file, $line, $member);
+
+            $fileFailures++;
+        }
+    };
+
+    $braceDepth = 0;
+    $classDepth = null;
+    $parenDepth = 0;
+    $count = count($tokens);
+
+    foreach ($tokens as $tokenPosition => $token)
+    {
+        $id = is_array($token) ? $token[0] : null;
+        $text = is_array($token) ? $token[1] : $token;
+        $line = is_array($token) ? $token[2] : 0;
+
+        if (in_array($id, [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM], true))
+        {
+            $classDepth = $braceDepth + 1;
+        }
+
+        if ($text === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($text === '}')
+        {
+            if ($classDepth === $braceDepth)
+            {
+                $classDepth = null;
+            }
+
+            $braceDepth--;
+        }
+
+        if ($text === '(')
+        {
+            $parenDepth++;
+        }
+
+        if ($text === ')')
+        {
+            $parenDepth--;
+        }
+
+        $inClass = $classDepth !== null && $braceDepth === $classDepth;
+
+        if ($id === T_FUNCTION)
+        {
+            $next = $tokenPosition + 1;
+
+            while ($next < $count && is_array($tokens[$next]) && $tokens[$next][0] === T_WHITESPACE)
+            {
+                $next++;
+            }
+
+            if (($tokens[$next] ?? null) === '(')
+            {
+                continue;
+            }
+
+            $parameters = [];
+            $opened = false;
+            $depth = 0;
+
+            for ($parameterIndex = $tokenPosition + 1; $parameterIndex < $count; $parameterIndex++)
+            {
+                $parameterToken = $tokens[$parameterIndex];
+                $parameterText = is_array($parameterToken) ? $parameterToken[1] : $parameterToken;
+
+                if ($parameterText === '(')
+                {
+                    $opened = true;
+                    $depth++;
+                }
+                elseif ($parameterText === ')')
+                {
+                    $depth--;
+
+                    if ($opened && $depth === 0)
+                    {
+                        break;
+                    }
+                }
+                elseif ($opened && is_array($parameterToken) && $parameterToken[0] === T_VARIABLE)
+                {
+                    $parameters[] = $parameterToken[1];
+                }
+            }
+
+            $name = 'method';
+
+            for ($nameIndex = $next; $nameIndex < $count; $nameIndex++)
+            {
+                if (is_array($tokens[$nameIndex]) && $tokens[$nameIndex][0] === T_STRING)
+                {
+                    $name = $tokens[$nameIndex][1];
+
+                    break;
+                }
+            }
+
+            $check($docBefore($tokens, $tokenPosition), $line, "method {$name}", 'return', $parameters);
+        }
+        elseif ($inClass && in_array($id, [T_CONST, T_CASE], true))
+        {
+            $check($docBefore($tokens, $tokenPosition), $line, $id === T_CONST ? 'constant' : 'enum case', 'var', []);
+        }
+        elseif ($inClass && $id === T_VARIABLE && $parenDepth === 0)
+        {
+            $check($docBefore($tokens, $tokenPosition, true), $line, 'property', 'var', []);
+        }
+    }
+
+    $failures += $fileFailures;
+}
+
+exit($failures);

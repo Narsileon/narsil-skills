@@ -68,7 +68,7 @@ $phpFiles = array_values(array_unique($phpFiles));
 
 foreach ($phpFiles as $file)
 {
-    foreach (['check-syntax', 'check-style', 'check-regions'] as $check)
+    foreach (['check-syntax', 'check-style', 'check-phpdoc', 'check-regions'] as $check)
     {
         $status = 0;
         passthru(escapeshellarg($scriptDirectory . '/' . $check) . ' ' . escapeshellarg($file), $status);

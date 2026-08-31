@@ -49,7 +49,7 @@ vendor/narsil/skills/scripts/php/check
 vendor/narsil/skills/scripts/php/check app/Domain/Model
 ```
 
-It runs separate syntax, style, region-order, and Composer checks. Passing checks are silent; failures include source lines and the command ends with success/failure totals.
+It runs separate syntax, PHPDoc, style, region-order, and Composer checks. Passing checks are silent; failures include source lines and the command ends with success/failure totals.
 
 ## Deployment / CI
 
