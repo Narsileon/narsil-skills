@@ -133,6 +133,14 @@ if ((${#php_files[@]} > 0)); then
                     in_constructor = 1
                     constructor_line = NR
                     constructor = substr($0, index($0, "(") + 1)
+                    if (constructor ~ /\)/) {
+                        if (constructor ~ /(^|[^[:alnum:]_])(public|protected|private)[[:space:]]+/) {
+                            print constructor_line
+                            exit
+                        }
+                        in_constructor = 0
+                        constructor = ""
+                    }
                     next
                 }
                 in_constructor {
