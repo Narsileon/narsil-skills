@@ -40,6 +40,17 @@ Local development (path repo):
 composer update narsil/skills
 ```
 
+## PHP checks
+
+Run the executable checker from a consumer project after creating or editing PHP:
+
+```bash
+vendor/narsil/skills/scripts/php/check
+vendor/narsil/skills/scripts/php/check app/Domain/Model
+```
+
+It runs `php -l`, checks the PHP rules that can be verified safely without a project-specific formatter or static-analysis configuration, and automatically runs `composer dump-autoload --no-interaction`.
+
 ## Deployment / CI
 
 `narsil/skills` is **require-dev only** — production and deploy pipelines must use:

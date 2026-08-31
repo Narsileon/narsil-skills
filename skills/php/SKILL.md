@@ -51,4 +51,4 @@ Copy templates into the target project. The stub is the contract — match its `
 
 ## Validation
 
-After creating or editing PHP classes, run a short `composer dump-autoload` in the project root to confirm Composer/autoload still resolves. Fix any failures before finishing.
+After creating or editing PHP classes, run `vendor/narsil/skills/scripts/php/check` from the project root. It validates PHP syntax and the mechanically verifiable PHP rules, then confirms Composer/autoload still resolves. Fix any failures before finishing.

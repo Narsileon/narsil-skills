@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+
+set -u
+
+script_name="$(basename "$0")"
+paths=()
+
+usage() {
+    printf 'Usage: %s [FILE|DIRECTORY ...]\n' "$script_name"
+    printf '\n'
+    printf 'Lint PHP files and check the mechanically verifiable PHP skill rules.\n'
+    printf 'Without paths, lint tracked PHP files in the current project.\n'
+}
+
+failures=0
+
+while (($# > 0)); do
+    case "$1" in
+        --help|-h)
+            usage
+            exit 0
+            ;;
+        --*)
+            printf 'Unknown option: %s\n' "$1" >&2
+            usage >&2
+            exit 2
+            ;;
+        *)
+            paths+=("$1")
+            ;;
+    esac
+
+    shift
+done
+
+if ! command -v php >/dev/null 2>&1; then
+    printf 'PHP is required but was not found in PATH.\n' >&2
+    exit 2
+fi
+
+php_files=()
+
+if ((${#paths[@]} == 0)); then
+    if command -v git >/dev/null 2>&1 && git rev-parse --show-toplevel >/dev/null 2>&1; then
+        while IFS= read -r file; do
+            php_files+=("$file")
+        done < <(git ls-files --cached --others --exclude-standard '*.php')
+    else
+        while IFS= read -r file; do
+            php_files+=("$file")
+        done < <(find . -type d -name vendor -prune -o -type f -name '*.php' -print)
+    fi
+else
+    for path in "${paths[@]}"; do
+        if [[ -d "$path" ]]; then
+            while IFS= read -r file; do
+                php_files+=("$file")
+            done < <(find "$path" -type d -name vendor -prune -o -type f -name '*.php' -print)
+        elif [[ -f "$path" ]]; then
+            php_files+=("$path")
+        else
+            printf 'Path not found: %s\n' "$path" >&2
+            failures=$((failures + 1))
+        fi
+    done
+fi
+
+if ((${#php_files[@]} == 0)); then
+    printf 'No PHP files found.\n'
+fi
+
+if ((${#php_files[@]} > 0)); then
+    for file in "${php_files[@]}"; do
+        if ! php -l "$file" >/dev/null; then
+            printf 'FAIL syntax: %s\n' "$file"
+            failures=$((failures + 1))
+            continue
+        fi
+
+        file_failures=0
+
+        if [[ "$(sed -n '1p' "$file")" != '<?php' || "$(sed -n '2p' "$file")" != 'declare(strict_types=1);' ]]; then
+            printf 'FAIL strict types: %s (expected <?php followed by declare(strict_types=1);)\n' "$file"
+            file_failures=$((file_failures + 1))
+        fi
+
+        if rg -n '(^|[[:space:]])//[[:space:]]*region\b|\bfn[[:space:]]*\(' "$file" >/dev/null; then
+            printf 'FAIL forbidden syntax: %s (// region comments and arrow functions are not allowed)\n' "$file"
+            file_failures=$((file_failures + 1))
+        fi
+
+        if rg -n '\bprivate[[:space:]]+final[[:space:]]+(const|function|[A-Za-z_])' "$file" >/dev/null; then
+            printf 'FAIL private final member: %s\n' "$file"
+            file_failures=$((file_failures + 1))
+        fi
+
+        if rg -n -P '\b(public|protected)\s+(?!final\s+)const\b' "$file" >/dev/null; then
+            printf 'FAIL missing final: %s (public/protected constants must be final)\n' "$file"
+            file_failures=$((file_failures + 1))
+        fi
+
+        if rg -n -U '#region[[:space:]]+[A-Z_]+[[:space:]]*\n[[:space:]]*#endregion' "$file" >/dev/null; then
+            printf 'FAIL empty region: %s\n' "$file"
+            file_failures=$((file_failures + 1))
+        fi
+
+        if rg -n -U '__construct[[:space:]]*\([^)]*\b(public|protected|private)[[:space:]]+' "$file" >/dev/null; then
+            printf 'FAIL constructor promotion: %s\n' "$file"
+            file_failures=$((file_failures + 1))
+        fi
+
+        failures=$((failures + file_failures))
+        if ((file_failures == 0)); then
+            printf 'PASS %s\n' "$file"
+        fi
+    done
+fi
+
+if [[ ! -f composer.json ]]; then
+    printf 'FAIL autoload: composer.json not found in current directory.\n' >&2
+    failures=$((failures + 1))
+elif ! command -v composer >/dev/null 2>&1; then
+    printf 'FAIL autoload: Composer is required.\n' >&2
+    failures=$((failures + 1))
+elif ! composer dump-autoload --no-interaction; then
+    printf 'FAIL autoload: composer dump-autoload\n'
+    failures=$((failures + 1))
+fi
+
+if ((failures > 0)); then
+    printf '\n%d check(s) failed.\n' "$failures" >&2
+    exit 1
+fi
+
+printf '\nAll PHP checks passed.\n'
