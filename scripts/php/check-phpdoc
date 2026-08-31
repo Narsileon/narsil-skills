@@ -5,6 +5,13 @@ declare(strict_types=1);
 
 $failures = 0;
 
+$autoload = getcwd() . '/vendor/autoload.php';
+
+if (is_file($autoload))
+{
+    require_once $autoload;
+}
+
 foreach (array_slice($argv, 1) as $file)
 {
     $contents = (string)file_get_contents($file);
@@ -203,6 +210,86 @@ foreach (array_slice($argv, 1) as $file)
         elseif ($inClass && $id === T_VARIABLE && $parenDepth === 0)
         {
             $check($docBefore($tokens, $tokenPosition, true), $line, 'property', 'var', []);
+        }
+    }
+
+    $namespace = '';
+
+    if (preg_match('/\bnamespace\s+([^;]+);/', $contents, $namespaceMatch) === 1)
+    {
+        $namespace = trim($namespaceMatch[1]) . '\\';
+    }
+
+    if (preg_match('/\b(class|interface|trait)\s+(\w+)\s+extends\s+([\\\w]+)/', $contents, $classMatch) === 1)
+    {
+        $className = $namespace . $classMatch[2];
+        $parentName = ltrim($classMatch[3], '\\');
+
+        if (!str_contains($parentName, '\\'))
+        {
+            $parentName = $namespace . $parentName;
+        }
+
+        if (class_exists($className) && class_exists($parentName))
+        {
+            $classReflection = new ReflectionClass($className);
+            $parentReflection = new ReflectionClass($parentName);
+
+            foreach ($classReflection->getMethods() as $method)
+            {
+                if ($method->getDeclaringClass()->getName() !== $className || !$parentReflection->hasMethod($method->getName()))
+                {
+                    continue;
+                }
+
+                $parentMethod = $parentReflection->getMethod($method->getName());
+                $childDoc = $method->getDocComment() ?: '';
+                $parentDoc = $parentMethod->getDocComment() ?: '';
+                $childInherit = preg_match('/\\{@inheritDoc\\}/i', $childDoc) === 1;
+                $parentHasDoc = $parentDoc !== '';
+
+                if ($parentHasDoc && !$childInherit)
+                {
+                    printf("FAIL PHPDoc inheritance: %s:%d: method %s overrides documented parent method and must use {@inheritDoc}\n", $file, $method->getStartLine(), $method->getName());
+
+                    $fileFailures++;
+                }
+
+                if (!$parentHasDoc && $childInherit)
+                {
+                    printf("FAIL PHPDoc inheritance: %s:%d: method %s uses {@inheritDoc}, but the parent has no PHPDoc\n", $file, $method->getStartLine(), $method->getName());
+
+                    $fileFailures++;
+                }
+            }
+
+            foreach ($classReflection->getProperties() as $property)
+            {
+                if ($property->getDeclaringClass()->getName() !== $className || !$parentReflection->hasProperty($property->getName()))
+                {
+                    continue;
+                }
+
+                $parentProperty = $parentReflection->getProperty($property->getName());
+                $childDoc = $property->getDocComment() ?: '';
+                $parentDoc = $parentProperty->getDocComment() ?: '';
+                $childInherit = preg_match('/\\{@inheritDoc\\}/i', $childDoc) === 1;
+                $parentHasDoc = $parentDoc !== '';
+
+                if ($parentHasDoc && !$childInherit)
+                {
+                    printf("FAIL PHPDoc inheritance: %s:%d: property %s overrides documented parent property and must use {@inheritDoc}\n", $file, $property->getStartLine(), $property->getName());
+
+                    $fileFailures++;
+                }
+
+                if (!$parentHasDoc && $childInherit)
+                {
+                    printf("FAIL PHPDoc inheritance: %s:%d: property %s uses {@inheritDoc}, but the parent has no PHPDoc\n", $file, $property->getStartLine(), $property->getName());
+
+                    $fileFailures++;
+                }
+            }
         }
     }
 
