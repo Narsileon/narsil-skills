@@ -1,0 +1,82 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$failures = 0;
+
+foreach (array_slice($argv, 1) as $file)
+{
+    $contents = (string)file_get_contents($file);
+
+    if (preg_match('/(^|[^A-Za-z0-9_])(class|interface|trait|enum)(\s|$)/', $contents) !== 1)
+    {
+        continue;
+    }
+
+    $lines = file($file, FILE_IGNORE_NEW_LINES);
+    $fileFailures = 0;
+
+    if (($lines[0] ?? '') !== '<?php' || ($lines[1] ?? '') !== '' || ($lines[2] ?? '') !== 'declare(strict_types=1);')
+    {
+        printf("FAIL strict types: %s (expected <?php, a blank line, then declare(strict_types=1);)\n", $file);
+        printf("  %s:1: %s\n", $file, $lines[0] ?? '');
+        printf("  %s:2: %s\n", $file, $lines[1] ?? '');
+        printf("  %s:3: %s\n", $file, $lines[2] ?? '');
+        $fileFailures++;
+    }
+
+    foreach ($lines as $lineNumber => $line)
+    {
+        $displayLine = $lineNumber + 1;
+
+        if (preg_match('/(^|\s)\/\/\s*region(?:\s|$)|(^|[^A-Za-z0-9_])fn\s*\(/', $line) === 1)
+        {
+            printf("FAIL forbidden syntax: %s:%d: %s\n", $file, $displayLine, $line);
+
+            $fileFailures++;
+        }
+
+        if (preg_match('/(^|[^A-Za-z0-9_])private\s+final\s+(const|function|[A-Za-z_])/', $line) === 1)
+        {
+            printf("FAIL private final member: %s:%d: %s\n", $file, $displayLine, $line);
+
+            $fileFailures++;
+        }
+
+        if (preg_match('/(^|[^A-Za-z0-9_])(public|protected)\s+const(?:\s|$)/', $line) === 1)
+        {
+            printf("FAIL missing final: %s:%d: %s\n", $file, $displayLine, $line);
+
+            $fileFailures++;
+        }
+    }
+
+    foreach ($lines as $lineNumber => $line)
+    {
+        if (preg_match('/^\s*#region\s+[A-Z_]+\s*$/', $line) !== 1)
+        {
+            continue;
+        }
+
+        if (preg_match('/^\s*#endregion\s*$/', $lines[$lineNumber + 1] ?? '') === 1)
+        {
+            printf("FAIL empty region: %s:%d: empty region\n", $file, $lineNumber + 2);
+
+            $fileFailures++;
+        }
+    }
+
+    if (preg_match('/function\s+__construct\s*\((.*?)\)/s', $contents, $matches, PREG_OFFSET_CAPTURE) === 1 && preg_match('/(^|[^A-Za-z0-9_])(public|protected|private)\s+/', $matches[1][0]) === 1)
+    {
+        $constructorLine = substr_count(substr($contents, 0, (int)$matches[0][1]), "\n") + 1;
+
+        printf("FAIL constructor promotion: %s:%d: constructor parameters use property promotion\n", $file, $constructorLine);
+
+        $fileFailures++;
+    }
+
+    $failures += $fileFailures;
+}
+
+exit($failures);

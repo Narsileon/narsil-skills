@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$failures = 0;
+
+foreach (array_slice($argv, 1) as $file)
+{
+    $output = [];
+    $status = 0;
+
+    exec('php -l ' . escapeshellarg($file) . ' 2>&1', $output, $status);
+
+    if ($status === 0)
+    {
+        continue;
+    }
+
+    printf("FAIL syntax: %s\n%s\n", $file, implode(PHP_EOL, $output));
+
+    $failures++;
+}
+
+exit($failures);

@@ -49,7 +49,7 @@ vendor/narsil/skills/scripts/php/check
 vendor/narsil/skills/scripts/php/check app/Domain/Model
 ```
 
-It runs `php -l`, checks the PHP rules that can be verified safely without a project-specific formatter or static-analysis configuration, and automatically runs `composer dump-autoload --no-interaction`.
+It runs separate syntax, style, region-order, and Composer checks. Passing checks are silent; failures include source lines and the command ends with success/failure totals.
 
 ## Deployment / CI
 

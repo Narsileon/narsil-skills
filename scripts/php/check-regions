@@ -1,0 +1,108 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$paths = array_slice($argv, 1);
+$regionOrder = [
+    'USE' => 10,
+    'CONSTRUCTOR' => 20,
+    'CONSTANTS' => 30,
+    'PROPERTIES' => 40,
+    'PUBLIC METHODS' => 50,
+    'PRIVATE METHODS' => 60,
+];
+$memberRegions = ['CONSTRUCTOR', 'CONSTANTS', 'PROPERTIES', 'PUBLIC METHODS', 'PRIVATE METHODS'];
+$failures = 0;
+
+foreach ($paths as $file)
+{
+    $tokens = token_get_all((string)file_get_contents($file));
+    $currentRegion = '';
+    $lastRegionOrder = 0;
+    $members = [];
+
+    foreach ($tokens as $index => $token)
+    {
+        if (!is_array($token))
+        {
+            continue;
+        }
+
+        [$tokenId, $tokenText, $line] = $token;
+
+        if ($tokenId === T_COMMENT && preg_match('/^#region\s+(.+)$/', trim($tokenText), $matches) === 1)
+        {
+            $currentRegion = trim($matches[1]);
+            $currentRegionOrder = $regionOrder[$currentRegion] ?? null;
+
+            if ($currentRegionOrder === null)
+            {
+                printf("FAIL regions: %s:%d: unknown region '%s'\n", $file, $line, $currentRegion);
+
+                $failures++;
+
+                continue;
+            }
+
+            if ($currentRegionOrder <= $lastRegionOrder)
+            {
+                printf("FAIL regions: %s:%d: region '%s' is out of order\n", $file, $line, $currentRegion);
+
+                $failures++;
+            }
+
+            $lastRegionOrder = $currentRegionOrder;
+
+            continue;
+        }
+
+        if ($tokenId === T_COMMENT && trim($tokenText) === '#endregion')
+        {
+            $currentRegion = '';
+
+            continue;
+        }
+
+        if ($currentRegion === '' || !in_array($currentRegion, $memberRegions, true) || $tokenId !== T_FUNCTION)
+        {
+            continue;
+        }
+
+        for ($lookAheadIndex = $index + 1, $tokenCount = count($tokens); $lookAheadIndex < $tokenCount; $lookAheadIndex++)
+        {
+            $lookAheadToken = $tokens[$lookAheadIndex];
+
+            if (is_array($lookAheadToken) && $lookAheadToken[0] === T_STRING)
+            {
+                $members[$currentRegion][] = ['name' => $lookAheadToken[1], 'line' => $line];
+
+                break;
+            }
+
+            if ((!is_array($lookAheadToken) && $lookAheadToken === '(') || (is_array($lookAheadToken) && $lookAheadToken[1] === '('))
+            {
+                break;
+            }
+        }
+    }
+
+    foreach ($members as $region => $regionMembers)
+    {
+        $previousName = '';
+
+        foreach ($regionMembers as $member)
+        {
+            if ($previousName !== '' && strcasecmp($member['name'], $previousName) < 0)
+            {
+                printf("FAIL regions: %s:%d: %s '%s' is out of alphabetical order after '%s'\n", $file, $member['line'], $region, $member['name'], $previousName);
+
+                $failures++;
+            }
+
+            $previousName = $member['name'];
+        }
+    }
+}
+
+exit($failures > 0 ? 1 : 0);

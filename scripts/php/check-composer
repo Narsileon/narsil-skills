@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+if (!is_file('composer.json'))
+{
+    printf("FAIL composer: composer.json not found in current directory.\n");
+
+    exit(1);
+}
+
+$output = [];
+$status = 0;
+
+exec('composer dump-autoload --no-interaction 2>&1', $output, $status);
+
+if ($status === 0)
+{
+    exit(0);
+}
+
+printf("FAIL composer: composer dump-autoload\n%s\n", implode(PHP_EOL, $output));
+
+exit(1);
