@@ -84,53 +84,59 @@ if ((${#php_files[@]} > 0)); then
 
         file_failures=0
 
-        if [[ "$(sed -n '1p' "$file")" != '<?php' || "$(sed -n '2p' "$file")" != 'declare(strict_types=1);' ]]; then
-            printf 'FAIL strict types: %s (expected <?php followed by declare(strict_types=1);)\n' "$file"
-            file_failures=$((file_failures + 1))
-        fi
+        if grep -Eq '(^|[^[:alnum:]_])(class|interface|trait|enum)([[:space:]]|$)' "$file"; then
+            if [[ "$(sed -n '1p' "$file")" != '<?php' || "$(sed -n '2p' "$file")" != '' || "$(sed -n '3p' "$file")" != 'declare(strict_types=1);' ]]; then
+                printf 'FAIL strict types: %s (expected <?php, a blank line, then declare(strict_types=1);)\n' "$file"
+                file_failures=$((file_failures + 1))
+            fi
 
-        if grep -Eq '(^|[[:space:]])//[[:space:]]*region([[:space:]]|$)|(^|[^[:alnum:]_])fn[[:space:]]*\(' "$file"; then
-            printf 'FAIL forbidden syntax: %s (// region comments and arrow functions are not allowed)\n' "$file"
-            file_failures=$((file_failures + 1))
-        fi
+            if grep -Eq '(^|[[:space:]])//[[:space:]]*region([[:space:]]|$)|(^|[^[:alnum:]_])fn[[:space:]]*\(' "$file"; then
+                printf 'FAIL forbidden syntax: %s (// region comments and arrow functions are not allowed)\n' "$file"
+                file_failures=$((file_failures + 1))
+            fi
 
-        if grep -Eq '(^|[^[:alnum:]_])private[[:space:]]+final[[:space:]]+(const|function|[A-Za-z_])' "$file"; then
-            printf 'FAIL private final member: %s\n' "$file"
-            file_failures=$((file_failures + 1))
-        fi
+            if grep -Eq '(^|[^[:alnum:]_])private[[:space:]]+final[[:space:]]+(const|function|[A-Za-z_])' "$file"; then
+                printf 'FAIL private final member: %s\n' "$file"
+                file_failures=$((file_failures + 1))
+            fi
 
-        if grep -Eq '(^|[^[:alnum:]_])(public|protected)[[:space:]]+const([[:space:]]|$)' "$file"; then
-            printf 'FAIL missing final: %s (public/protected constants must be final)\n' "$file"
-            file_failures=$((file_failures + 1))
-        fi
+            if grep -Eq '(^|[^[:alnum:]_])(public|protected)[[:space:]]+const([[:space:]]|$)' "$file"; then
+                printf 'FAIL missing final: %s (public/protected constants must be final)\n' "$file"
+                file_failures=$((file_failures + 1))
+            fi
 
-        if awk '
-            /#region[[:space:]]+[A-Z_]+[[:space:]]*$/ { in_region = 1; next }
-            in_region && /^[[:space:]]*#endregion[[:space:]]*$/ { found = 1; exit }
-            in_region && !/^[[:space:]]*$/ { in_region = 0 }
-            END { exit(found ? 0 : 1) }
-        ' "$file"; then
-            printf 'FAIL empty region: %s\n' "$file"
-            file_failures=$((file_failures + 1))
-        fi
+            if awk '
+                /#region[[:space:]]+[A-Z_]+[[:space:]]*$/ { in_region = 1; next }
+                in_region && /^[[:space:]]*#endregion[[:space:]]*$/ { found = 1; exit }
+                in_region && !/^[[:space:]]*$/ { in_region = 0 }
+                END { exit(found ? 0 : 1) }
+            ' "$file"; then
+                printf 'FAIL empty region: %s\n' "$file"
+                file_failures=$((file_failures + 1))
+            fi
 
-        if awk '
-            /__construct[[:space:]]*\(/ { in_constructor = 1; constructor = $0; next }
-            in_constructor {
-                constructor = constructor $0
-                if ($0 ~ /\)/) {
-                    if (constructor ~ /(^|[^[:alnum:]_])(public|protected|private)[[:space:]]+/) {
-                        found = 1
-                        exit
-                    }
-                    in_constructor = 0
-                    constructor = ""
+            if awk '
+                /function[[:space:]]+__construct[[:space:]]*\(/ {
+                    in_constructor = 1
+                    constructor = substr($0, index($0, "(") + 1)
+                    next
                 }
-            }
-            END { exit(found ? 0 : 1) }
-        ' "$file"; then
-            printf 'FAIL constructor promotion: %s\n' "$file"
-            file_failures=$((file_failures + 1))
+                in_constructor {
+                    constructor = constructor $0
+                    if ($0 ~ /\)/) {
+                        if (constructor ~ /(^|[^[:alnum:]_])(public|protected|private)[[:space:]]+/) {
+                            found = 1
+                            exit
+                        }
+                        in_constructor = 0
+                        constructor = ""
+                    }
+                }
+                END { exit(found ? 0 : 1) }
+            ' "$file"; then
+                printf 'FAIL constructor promotion: %s\n' "$file"
+                file_failures=$((file_failures + 1))
+            fi
         fi
 
         failures=$((failures + file_failures))
