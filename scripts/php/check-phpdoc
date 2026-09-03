@@ -114,7 +114,21 @@ foreach (array_slice($argv, 1) as $file)
         $text = is_array($token) ? $token[1] : $token;
         $line = is_array($token) ? $token[2] : 0;
 
+        $isDeclaration = false;
+
         if (in_array($id, [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM], true))
+        {
+            $next = $tokenPosition + 1;
+
+            while ($next < $count && is_array($tokens[$next]) && $tokens[$next][0] === T_WHITESPACE)
+            {
+                $next++;
+            }
+
+            $isDeclaration = isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] === T_STRING;
+        }
+
+        if ($isDeclaration)
         {
             $classDepth = $braceDepth + 1;
         }
