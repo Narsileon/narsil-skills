@@ -10,16 +10,23 @@ if (!is_file('composer.json'))
     exit(1);
 }
 
+$arguments = 'dump-autoload --no-interaction';
+
+if (!is_file('artisan'))
+{
+    $arguments .= ' --no-scripts';
+}
+
 $output = [];
 $status = 0;
 
-exec('composer dump-autoload --no-interaction 2>&1', $output, $status);
+exec('composer ' . $arguments . ' 2>&1', $output, $status);
 
 if ($status === 0)
 {
     exit(0);
 }
 
-printf("FAIL composer: composer dump-autoload\n%s\n", implode(PHP_EOL, $output));
+printf("FAIL composer: composer %s\n%s\n", $arguments, implode(PHP_EOL, $output));
 
 exit(1);

@@ -105,6 +105,7 @@ foreach (array_slice($argv, 1) as $file)
 
     $braceDepth = 0;
     $classDepth = null;
+    $enumDepth = null;
     $parenDepth = 0;
     $count = count($tokens);
 
@@ -131,6 +132,11 @@ foreach (array_slice($argv, 1) as $file)
         if ($isDeclaration)
         {
             $classDepth = $braceDepth + 1;
+
+            if ($id === T_ENUM)
+            {
+                $enumDepth = $braceDepth + 1;
+            }
         }
 
         if ($text === '{')
@@ -143,6 +149,11 @@ foreach (array_slice($argv, 1) as $file)
             if ($classDepth === $braceDepth)
             {
                 $classDepth = null;
+            }
+
+            if ($enumDepth === $braceDepth)
+            {
+                $enumDepth = null;
             }
 
             $braceDepth--;
@@ -217,7 +228,7 @@ foreach (array_slice($argv, 1) as $file)
 
             $check($docBefore($tokens, $tokenPosition), $line, "method {$name}", 'return', $parameters);
         }
-        elseif ($inClass && in_array($id, [T_CONST, T_CASE], true))
+        elseif ($inClass && ($id === T_CONST || ($id === T_CASE && $enumDepth === $braceDepth)))
         {
             $check($docBefore($tokens, $tokenPosition), $line, $id === T_CONST ? 'constant' : 'enum case', 'var', []);
         }

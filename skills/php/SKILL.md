@@ -26,7 +26,7 @@ Copy templates into the target project. The stub is the contract — match its `
 - `#region` / `#endregion` only — never `// region`.
 - **Never write an empty region** — omit `#region` / `#endregion` entirely when that section has no members (no empty `CONSTRUCTOR`, `CONSTANTS`, `PROPERTIES`, `PRIVATE METHODS`, or `USE`). Only emit a region that contains at least one `use`, constant, property, or method. Keep relative order from the table above for regions that do exist.
 - `use` statements sorted alphabetically in the `USE` region.
-- Constants, properties, and methods sorted alphabetically within each region (`__construct` in `CONSTRUCTOR`).
+- Constants and properties are sorted alphabetically within each region. Methods are grouped as abstract static, static or abstract, then normal methods; methods are sorted alphabetically within each group (`__construct` in `CONSTRUCTOR`).
 - Use constants for database table and column names. Never hardcode database identifiers as string literals in application queries, relationships, repositories, or migrations; define a descriptive constant on the relevant model or table class first.
 - Use named arguments for calls with multiple arguments when the called function or method has at least one optional parameter, especially when skipping optional parameters or when the argument meaning is unclear. Sort named arguments alphabetically by parameter name.
 - Associative arrays in `return` / response payloads sorted alphabetically by key.
@@ -52,3 +52,5 @@ Copy templates into the target project. The stub is the contract — match its `
 ## Validation
 
 After creating or editing PHP classes, run `vendor/narsil/skills/scripts/php/check` from the project root. It validates PHP syntax, regions, and mechanically verifiable PHP rules, including PHPDoc on every method, property, constant, and enum case. Methods with parameters require one `@param` per parameter, `@return` (including `@return void`), and a blank line between the `@param` block and `@return`. Docblocks must be multiline. When Composer can resolve the class, overrides of documented parent methods or properties must use `{@inheritDoc}`; do not use `{@inheritDoc}` when the parent has no PHPDoc. The check then confirms Composer/autoload still resolves. Fix every failure before finishing.
+
+For mechanical enum migration and alphabetical method ordering, run `vendor/narsil/skills/scripts/php/fix` with one or more files or directories. Review the resulting diff, then run `check` again; the fixers add correctly placed `CASES` regions, add or expand `@var string` enum-case docblocks, and reorder complete method blocks within their existing method regions. Individual fixers live in `scripts/php/fixes/`, parallel to the checks in `scripts/php/checks/`.

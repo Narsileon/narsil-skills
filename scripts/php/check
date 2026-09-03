@@ -71,7 +71,7 @@ foreach ($phpFiles as $file)
     foreach (['check-syntax', 'check-style', 'check-phpdoc', 'check-regions'] as $check)
     {
         $status = 0;
-        passthru(escapeshellarg($scriptDirectory . '/' . $check) . ' ' . escapeshellarg($file), $status);
+        passthru(escapeshellarg($scriptDirectory . '/checks/' . $check) . ' ' . escapeshellarg($file), $status);
 
         if ($status === 0)
         {
@@ -91,7 +91,7 @@ foreach ($phpFiles as $file)
 
 $composerStatus = 0;
 
-passthru(escapeshellarg($scriptDirectory . '/check-composer'), $composerStatus);
+passthru(escapeshellarg($scriptDirectory . '/checks/check-composer'), $composerStatus);
 
 if ($composerStatus === 0)
 {

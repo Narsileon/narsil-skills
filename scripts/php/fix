@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$scriptDirectory = __DIR__;
+$paths = array_slice($argv, 1);
+
+if (in_array('--help', $paths, true) || in_array('-h', $paths, true))
+{
+    printf("Usage: %s [FILE|DIRECTORY ...]\n\nRun the PHP automatic fixers.\n", basename(__FILE__));
+
+    exit(0);
+}
+
+passthru(escapeshellarg($scriptDirectory . '/fixes/fix-phpdoc') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+
+if ($status !== 0)
+{
+    exit($status);
+}
+
+passthru(escapeshellarg($scriptDirectory . '/fixes/fix-regions') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+
+exit($status);

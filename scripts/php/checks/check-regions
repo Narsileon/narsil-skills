@@ -24,6 +24,8 @@ foreach ($paths as $file)
     $regionStack = [];
     $lastRegionOrder = 0;
     $members = [];
+    $isEnum = false;
+    $hasCasesRegion = false;
 
     foreach ($tokens as $index => $token)
     {
@@ -34,9 +36,33 @@ foreach ($paths as $file)
 
         [$tokenId, $tokenText, $line] = $token;
 
+        if ($tokenId === T_ENUM)
+        {
+            $isEnum = true;
+        }
+
         if ($tokenId === T_COMMENT && preg_match('/^#region\s+(.+)$/', trim($tokenText), $matches) === 1)
         {
             $region = trim($matches[1]);
+
+            $previousTokenIndex = $index - 1;
+
+            while ($previousTokenIndex >= 0 && is_array($tokens[$previousTokenIndex]) && $tokens[$previousTokenIndex][0] === T_WHITESPACE)
+            {
+                $previousTokenIndex--;
+            }
+
+            if ($region === 'CASES' && is_array($tokens[$previousTokenIndex] ?? null) && $tokens[$previousTokenIndex][0] === T_DOC_COMMENT)
+            {
+                printf("FAIL regions: %s:%d: CASES region cannot follow PHPDoc\n", $file, $line);
+
+                $failures++;
+            }
+
+            if ($region === 'CASES')
+            {
+                $hasCasesRegion = true;
+            }
 
             if (str_starts_with($region, '• '))
             {
@@ -91,7 +117,34 @@ foreach ($paths as $file)
 
             if (is_array($lookAheadToken) && $lookAheadToken[0] === T_STRING)
             {
-                $members[$currentRegion][] = ['name' => $lookAheadToken[1], 'line' => $line];
+                $hasAbstract = false;
+                $hasStatic = false;
+
+                for ($modifierIndex = $index - 1; $modifierIndex >= 0; $modifierIndex--)
+                {
+                    $modifierToken = $tokens[$modifierIndex];
+
+                    if (!is_array($modifierToken) || $modifierToken[0] !== T_WHITESPACE)
+                    {
+                        if (is_array($modifierToken) && $modifierToken[0] === T_ABSTRACT)
+                        {
+                            $hasAbstract = true;
+                        }
+
+                        if (is_array($modifierToken) && $modifierToken[0] === T_STATIC)
+                        {
+                            $hasStatic = true;
+                        }
+
+                        if (!is_array($modifierToken) || !in_array($modifierToken[0], [T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC], true))
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                $kind = $hasAbstract && $hasStatic ? 0 : ($hasAbstract || $hasStatic ? 1 : 2);
+                $members[$currentRegion][] = ['kind' => $kind, 'name' => $lookAheadToken[1], 'line' => $line];
 
                 break;
             }
@@ -105,11 +158,12 @@ foreach ($paths as $file)
 
     foreach ($members as $region => $regionMembers)
     {
+        $previousKind = null;
         $previousName = '';
 
         foreach ($regionMembers as $member)
         {
-            if ($previousName !== '' && strcasecmp($member['name'], $previousName) < 0)
+            if ($previousKind !== null && ($member['kind'] < $previousKind || ($member['kind'] === $previousKind && strcasecmp($member['name'], $previousName) < 0)))
             {
                 printf("FAIL regions: %s:%d: %s '%s' is out of alphabetical order after '%s'\n", $file, $member['line'], $region, $member['name'], $previousName);
 
@@ -117,7 +171,15 @@ foreach ($paths as $file)
             }
 
             $previousName = $member['name'];
+            $previousKind = $member['kind'];
         }
+    }
+
+    if ($isEnum && !$hasCasesRegion)
+    {
+        printf("FAIL regions: %s: enum is missing CASES region\n", $file);
+
+        $failures++;
     }
 }
 
