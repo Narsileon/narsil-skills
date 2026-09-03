@@ -58,7 +58,7 @@ foreach (array_values(array_unique($files)) as $file)
             $region = trim($matches[1]);
         }
 
-        if ($tokenId === T_CLASS)
+        if (in_array($tokenId, [T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT], true))
         {
             $next = $tokenIndex + 1;
 
@@ -198,7 +198,7 @@ foreach (array_values(array_unique($files)) as $file)
         $methodsByRegion[$region][] = [
             'end' => $tokenOffsets[$endToken] + strlen(is_array($tokens[$endToken]) ? $tokens[$endToken][1] : $tokens[$endToken]),
             'function' => $tokenOffsets[$tokenIndex],
-            'kind' => $abstract && $static ? 0 : ($abstract || $static ? 1 : 2),
+            'kind' => $abstract && $static ? 0 : ($static ? 1 : ($abstract ? 2 : 3)),
             'name' => $name,
             'start' => $tokenOffsets[$startToken],
         ];

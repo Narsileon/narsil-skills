@@ -26,7 +26,7 @@ Copy templates into the target project. The stub is the contract — match its `
 - `#region` / `#endregion` only — never `// region`.
 - **Never write an empty region** — omit `#region` / `#endregion` entirely when that section has no members (no empty `CONSTRUCTOR`, `CONSTANTS`, `PROPERTIES`, `PRIVATE METHODS`, or `USE`). Only emit a region that contains at least one `use`, constant, property, or method. Keep relative order from the table above for regions that do exist.
 - `use` statements sorted alphabetically in the `USE` region.
-- Constants and properties are sorted alphabetically within each region. Methods are grouped as abstract static, static or abstract, then normal methods; methods are sorted alphabetically within each group (`__construct` in `CONSTRUCTOR`).
+- Constants and properties are sorted alphabetically within each region. Every method region (`PUBLIC METHODS`, `PROTECTED METHODS`, and `PRIVATE METHODS`) groups methods as abstract static first, static second, abstract third, then normal methods; methods are sorted alphabetically within each group (`__construct` in `CONSTRUCTOR`).
 - Use constants for database table and column names. Never hardcode database identifiers as string literals in application queries, relationships, repositories, or migrations; define a descriptive constant on the relevant model or table class first.
 - Use named arguments for calls with multiple arguments when the called function or method has at least one optional parameter, especially when skipping optional parameters or when the argument meaning is unclear. Sort named arguments alphabetically by parameter name.
 - Associative arrays in `return` / response payloads sorted alphabetically by key.

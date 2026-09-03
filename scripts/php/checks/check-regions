@@ -26,15 +26,49 @@ foreach ($paths as $file)
     $members = [];
     $isEnum = false;
     $hasCasesRegion = false;
+    $braceDepth = 0;
+    $classDepth = null;
 
     foreach ($tokens as $index => $token)
     {
+        $tokenId = is_array($token) ? $token[0] : null;
+        $tokenText = is_array($token) ? $token[1] : $token;
+        $line = is_array($token) ? $token[2] : 0;
+
+        if (in_array($tokenId, [T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT], true))
+        {
+            $next = $index + 1;
+
+            while ($next < count($tokens) && is_array($tokens[$next]) && $tokens[$next][0] === T_WHITESPACE)
+            {
+                $next++;
+            }
+
+            if (isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] === T_STRING)
+            {
+                $classDepth = $braceDepth + 1;
+            }
+        }
+
+        if ($tokenText === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($tokenText === '}')
+        {
+            $braceDepth--;
+
+            if ($classDepth !== null && $braceDepth < $classDepth)
+            {
+                $classDepth = null;
+            }
+        }
+
         if (!is_array($token))
         {
             continue;
         }
-
-        [$tokenId, $tokenText, $line] = $token;
 
         if ($tokenId === T_ENUM)
         {
@@ -106,7 +140,7 @@ foreach ($paths as $file)
 
         $currentRegion = $regionStack[count($regionStack) - 1] ?? '';
 
-        if ($currentRegion === '' || !in_array($currentRegion, $memberRegions, true) || $tokenId !== T_FUNCTION)
+        if ($currentRegion === '' || !in_array($currentRegion, $memberRegions, true) || $tokenId !== T_FUNCTION || $classDepth === null || $braceDepth !== $classDepth)
         {
             continue;
         }
@@ -143,7 +177,7 @@ foreach ($paths as $file)
                     }
                 }
 
-                $kind = $hasAbstract && $hasStatic ? 0 : ($hasAbstract || $hasStatic ? 1 : 2);
+                $kind = $hasAbstract && $hasStatic ? 0 : ($hasStatic ? 1 : ($hasAbstract ? 2 : 3));
                 $members[$currentRegion][] = ['kind' => $kind, 'name' => $lookAheadToken[1], 'line' => $line];
 
                 break;
