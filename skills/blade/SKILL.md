@@ -17,10 +17,10 @@ Tailwind tokens: follow [tailwind](../tailwind/SKILL.md).
 
 Copy [templates/](templates/) into the target project. The stubs are the contract.
 
-| Artifact | Template | Role |
-| -------- | -------- | ---- |
-| View Component class | [component.stub](templates/component.stub) | Logic + public props (`Ui\Button`) |
-| UI Blade | [component.blade.stub](templates/component.blade.stub) | Classes + variants (`@php` + `twMerge`) |
+| Artifact             | Template                                               | Role                                    |
+| -------------------- | ------------------------------------------------------ | --------------------------------------- |
+| View Component class | [component.stub](templates/component.stub)             | Logic + public props (`Ui\Button`)      |
+| UI Blade             | [component.blade.stub](templates/component.blade.stub) | Classes + variants (`@php` + `twMerge`) |
 
 ## Folder layout
 
@@ -38,22 +38,26 @@ mail/
 pages/
 ```
 
-| Path | Role | Builds with |
-| ---- | ---- | ----------- |
-| `components/ui/{name}.blade.php` | Primitive UI | Markup and icons (no blocks / subblocks) |
-| `components/icons/{name}.blade.php` | Icon | SVG markup only |
-| `components/{block}.blade.php` | Block | UI and subblocks |
-| `components/{block}/{subblock}.blade.php` | Subblock | UI |
-| `components/{page}/{subblock}.blade.php` | Page subblock (repeated on that page) | UI |
-| `layouts/` | Page layouts | |
-| `mail/` | Mail templates | |
-| `pages/` | Pages | Layouts + blocks + page subblocks |
+| Path                                      | Role                                  | Builds with                              |
+| ----------------------------------------- | ------------------------------------- | ---------------------------------------- |
+| `components/ui/{name}.blade.php`          | Primitive UI                          | Markup and icons (no blocks / subblocks) |
+| `components/icons/{name}.blade.php`       | Icon                                  | SVG markup only                          |
+| `components/{block}.blade.php`            | Block                                 | UI and subblocks                         |
+| `components/{block}/{subblock}.blade.php` | Subblock                              | UI                                       |
+| `components/{page}/{subblock}.blade.php`  | Page subblock (repeated on that page) | UI                                       |
+| `layouts/`                                | Page layouts                          |                                          |
+| `mail/`                                   | Mail templates                        |                                          |
+| `pages/`                                  | Pages                                 | Layouts + blocks + page subblocks        |
 
 ```blade
 {{-- components/hero.blade.php → <x-hero> --}}
 <section {{ $attributes }}>
-    <x-hero.heading>{{ $heading }}</x-hero.heading>
-    <x-ui.button :href="$ctaUrl">{{ $ctaLabel }}</x-ui.button>
+    <x-hero.heading>
+      {{ $heading }}
+    </x-hero.heading>
+    <x-ui.button :href="$ctaUrl">
+      {{ $ctaLabel }}
+    </x-ui.button>
 </section>
 ```
 
@@ -75,20 +79,20 @@ composer require gehrisandro/tailwind-merge-laravel
 
 Use everywhere classes are merged:
 
-| Context | API |
-| ------- | --- |
-| Blade attributes bag | `$attributes->twMerge(…)` |
+| Context                | API                                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| Blade attributes bag   | `$attributes->twMerge(…)`                                                                 |
 | Nested element classes | `$attributes->withoutTwMergeClasses()->twMerge(…)` + `$attributes->twMergeFor('icon', …)` |
-| Inline / `@php` | `twMerge(…)` helper |
-| PHP (non-Blade) | `twMerge(…)` or `TailwindMerge::merge(…)` |
+| Inline / `@php`        | `twMerge(…)` helper                                                                       |
+| PHP (non-Blade)        | `twMerge(…)` or `TailwindMerge::merge(…)`                                                 |
 
 Do **not** use `$attributes->merge(['class' => '…'])` for Tailwind — it does not resolve conflicts.
 
 ## Separation of concerns
 
-| Place | Owns |
-| ----- | ---- |
-| `app/View/Components/**/*.php` | Logic, props, defaults, computed data, `render()` |
+| Place                                       | Owns                                              |
+| ------------------------------------------- | ------------------------------------------------- |
+| `app/View/Components/**/*.php`              | Logic, props, defaults, computed data, `render()` |
 | `resources/views/components/**/*.blade.php` | Markup, **classes**, **variants** (inline `@php`) |
 
 - Keep variant maps and class strings out of the PHP class.
