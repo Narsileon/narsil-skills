@@ -51,6 +51,17 @@ vendor/narsil/skills/scripts/php/check app/Domain/Model
 
 It runs separate syntax, PHPDoc, style, region-order, and Composer checks. Passing checks are silent; failures include source lines and the command ends with success/failure totals.
 
+Region checks can also be run independently:
+
+```bash
+vendor/narsil/skills/scripts/php/checks/check-region-order
+vendor/narsil/skills/scripts/php/checks/check-region-hierarchy
+vendor/narsil/skills/scripts/php/checks/check-method-order
+vendor/narsil/skills/scripts/php/checks/check-enum-regions
+```
+
+The fixer pipeline first runs `fix-empty-lines`, which collapses consecutive blank lines, then `fix-member-order`. The structural member-order fixer creates canonical regions and moves complete class members into constructor, constants, properties, and method groups. It skips ambiguous classes with existing internal regions or unsupported class-level statements. The method-order fixer is available as `fix-method-order`; `fix-regions` remains an alias for compatibility.
+
 ## Deployment / CI
 
 `narsil/skills` is **require-dev only** — production and deploy pipelines must use:

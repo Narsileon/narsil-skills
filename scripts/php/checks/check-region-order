@@ -1,0 +1,40 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../../src/Enums/RegionEnum.php';
+
+use Narsil\Skills\Enums\RegionEnum;
+
+$failures = 0;
+
+foreach (array_slice($argv, 1) as $file)
+{
+    $lastOrder = 0;
+
+    foreach (token_get_all((string)file_get_contents($file)) as $token)
+    {
+        if (!is_array($token) || $token[0] !== T_COMMENT || preg_match('/^#region\s+(.+)$/', trim($token[1]), $matches) !== 1)
+        {
+            continue;
+        }
+
+        $region = trim($matches[1]);
+        $order = RegionEnum::tryFrom($region)?->sortOrder();
+
+        if ($order !== null && $order <= $lastOrder)
+        {
+            printf("FAIL region order: %s:%d: region '%s' is out of order\n", $file, $token[2], $region);
+
+            $failures++;
+        }
+
+        if ($order !== null)
+        {
+            $lastOrder = $order;
+        }
+    }
+}
+
+exit($failures > 0 ? 1 : 0);

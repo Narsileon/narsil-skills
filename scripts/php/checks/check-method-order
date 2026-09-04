@@ -1,0 +1,124 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../../src/Enums/RegionEnum.php';
+
+use Narsil\Skills\Enums\RegionEnum;
+
+$failures = 0;
+
+foreach (array_slice($argv, 1) as $file)
+{
+    $tokens = token_get_all((string)file_get_contents($file));
+    $region = '';
+    $members = [];
+    $braceDepth = 0;
+    $classDepth = null;
+
+    foreach ($tokens as $index => $token)
+    {
+        $id = is_array($token) ? $token[0] : null;
+        $text = is_array($token) ? $token[1] : $token;
+        $line = is_array($token) ? $token[2] : 0;
+
+        if (in_array($id, [T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT], true))
+        {
+            $next = $index + 1;
+
+            while (isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] === T_WHITESPACE)
+            {
+                $next++;
+            }
+
+            if (isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] === T_STRING)
+            {
+                $classDepth = $braceDepth + 1;
+            }
+        }
+
+        if ($text === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($text === '}')
+        {
+            $braceDepth--;
+
+            if ($classDepth !== null && $braceDepth < $classDepth)
+            {
+                $classDepth = null;
+                $region = '';
+            }
+        }
+
+        if ($id === T_COMMENT && preg_match('/^#region\s+(.+)$/', trim($text), $matches) === 1)
+        {
+            $region = trim($matches[1]);
+        }
+
+        if ($id !== T_FUNCTION || $classDepth === null || $braceDepth !== $classDepth || !RegionEnum::tryFrom($region)?->isMethod())
+        {
+            continue;
+        }
+
+        $name = '';
+        $hasAbstract = false;
+        $hasStatic = false;
+
+        for ($modifierIndex = $index - 1; $modifierIndex >= 0; $modifierIndex--)
+        {
+            $modifier = $tokens[$modifierIndex];
+
+            if (!is_array($modifier) || $modifier[0] !== T_WHITESPACE)
+            {
+                $hasAbstract = $hasAbstract || (is_array($modifier) && $modifier[0] === T_ABSTRACT);
+                $hasStatic = $hasStatic || (is_array($modifier) && $modifier[0] === T_STATIC);
+
+                if (!is_array($modifier) || !in_array($modifier[0], [T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC], true))
+                {
+                    break;
+                }
+            }
+        }
+
+        for ($lookAhead = $index + 1; isset($tokens[$lookAhead]); $lookAhead++)
+        {
+            if (is_array($tokens[$lookAhead]) && $tokens[$lookAhead][0] === T_STRING)
+            {
+                $name = $tokens[$lookAhead][1];
+
+                break;
+            }
+
+            if (($tokens[$lookAhead] ?? null) === '(')
+            {
+                break;
+            }
+        }
+
+        $kind = $hasAbstract && $hasStatic ? 0 : ($hasStatic ? 1 : ($hasAbstract ? 2 : 3));
+        $members[$region][] = ['kind' => $kind, 'line' => $line, 'name' => $name];
+    }
+
+    foreach ($members as $memberRegion => $regionMembers)
+    {
+        $previous = null;
+
+        foreach ($regionMembers as $member)
+        {
+            if ($previous !== null && ($member['kind'] < $previous['kind'] || ($member['kind'] === $previous['kind'] && strcasecmp($member['name'], $previous['name']) < 0)))
+            {
+                printf("FAIL region sorting: %s:%d: %s '%s' is out of order after '%s'\n", $file, $member['line'], $memberRegion, $member['name'], $previous['name']);
+
+                $failures++;
+            }
+
+            $previous = $member;
+        }
+    }
+}
+
+exit($failures > 0 ? 1 : 0);

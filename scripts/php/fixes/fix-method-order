@@ -1,0 +1,274 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../../../src/Enums/RegionEnum.php';
+
+use Narsil\Skills\Enums\RegionEnum;
+
+$files = [];
+
+foreach (array_slice($argv, 1) as $path)
+{
+    if (is_dir($path))
+    {
+        $excludedDirectories = array_values(array_filter([
+            realpath($path . DIRECTORY_SEPARATOR . 'vendor'),
+            realpath($path . DIRECTORY_SEPARATOR . 'node_modules'),
+        ]));
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+
+        foreach ($iterator as $file)
+        {
+            $realPath = realpath($file->getPathname()) ?: $file->getPathname();
+
+            if ($file->isFile() && $file->getExtension() === 'php' && !str_ends_with($realPath, '.blade.php') && !array_filter($excludedDirectories, static function (string $excludedDirectory) use ($realPath): bool
+            {
+                return str_starts_with($realPath, $excludedDirectory . DIRECTORY_SEPARATOR);
+            }))
+            {
+                $files[] = $file->getPathname();
+            }
+        }
+
+        continue;
+    }
+
+    if (is_file($path))
+    {
+        $files[] = $path;
+    }
+}
+
+foreach (array_values(array_unique($files)) as $file)
+{
+    $contents = (string) file_get_contents($file);
+    $originalContents = $contents;
+    $tokens = token_get_all($contents);
+    $tokenOffsets = [];
+    $offset = 0;
+
+    foreach ($tokens as $tokenIndex => $token)
+    {
+        $tokenOffsets[$tokenIndex] = $offset;
+        $offset += strlen(is_array($token) ? $token[1] : $token);
+    }
+
+    $braceDepth = 0;
+    $classDepth = null;
+    $region = '';
+    $methodsByRegion = [];
+    $tokenCount = count($tokens);
+
+    foreach ($tokens as $tokenIndex => $token)
+    {
+        $tokenId = is_array($token) ? $token[0] : null;
+        $tokenText = is_array($token) ? $token[1] : $token;
+
+        if ($tokenId === T_COMMENT && preg_match('/^#region\s+(.+)$/', trim($tokenText), $matches) === 1)
+        {
+            $region = trim($matches[1]);
+        }
+
+        if (in_array($tokenId, [T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT], true))
+        {
+            $next = $tokenIndex + 1;
+
+            while ($next < $tokenCount && is_array($tokens[$next]) && $tokens[$next][0] === T_WHITESPACE)
+            {
+                $next++;
+            }
+
+            if (isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] === T_STRING)
+            {
+                $classDepth = $braceDepth + 1;
+            }
+        }
+
+        if ($tokenText === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($tokenText === '}')
+        {
+            $braceDepth--;
+
+            if ($classDepth !== null && $braceDepth < $classDepth)
+            {
+                $classDepth = null;
+                $region = '';
+            }
+        }
+
+        $regionEnum = RegionEnum::tryFrom($region);
+
+        if ($tokenId !== T_FUNCTION || $classDepth === null || $braceDepth !== $classDepth || $regionEnum === null || !$regionEnum->isMethod())
+        {
+            continue;
+        }
+
+        $name = '';
+        $bodyStart = null;
+        $bodyEnd = null;
+        $abstract = false;
+        $static = false;
+
+        for ($modifierIndex = $tokenIndex - 1; $modifierIndex >= 0; $modifierIndex--)
+        {
+            $modifierToken = $tokens[$modifierIndex];
+
+            if (!is_array($modifierToken) || $modifierToken[0] !== T_WHITESPACE)
+            {
+                if (is_array($modifierToken) && $modifierToken[0] === T_ABSTRACT)
+                {
+                    $abstract = true;
+                }
+
+                if (is_array($modifierToken) && $modifierToken[0] === T_STATIC)
+                {
+                    $static = true;
+                }
+
+                if (!is_array($modifierToken) || !in_array($modifierToken[0], [T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC], true))
+                {
+                    break;
+                }
+            }
+        }
+        $bodyDepth = 0;
+
+        for ($lookAhead = $tokenIndex + 1; $lookAhead < $tokenCount; $lookAhead++)
+        {
+            $lookAheadToken = $tokens[$lookAhead];
+            $lookAheadId = is_array($lookAheadToken) ? $lookAheadToken[0] : null;
+            $lookAheadText = is_array($lookAheadToken) ? $lookAheadToken[1] : $lookAheadToken;
+
+            if ($name === '' && $lookAheadId === T_STRING)
+            {
+                $name = $lookAheadToken[1];
+            }
+
+            if ($lookAheadText !== '{' && $lookAheadText !== ';')
+            {
+                continue;
+            }
+
+            $bodyStart = $lookAhead;
+
+            if ($lookAheadText === ';')
+            {
+                $bodyEnd = $lookAhead;
+
+                break;
+            }
+            $bodyDepth = 1;
+
+            for ($bodyIndex = $lookAhead + 1; $bodyIndex < $tokenCount; $bodyIndex++)
+            {
+                $bodyToken = $tokens[$bodyIndex];
+                $bodyText = is_array($bodyToken) ? $bodyToken[1] : $bodyToken;
+
+                if ($bodyText === '{')
+                {
+                    $bodyDepth++;
+                }
+                elseif ($bodyText === '}')
+                {
+                    $bodyDepth--;
+
+                    if ($bodyDepth === 0)
+                    {
+                        $bodyEnd = $bodyIndex;
+
+                        break;
+                    }
+                }
+            }
+
+            break;
+        }
+
+        if ($name === '' || $bodyStart === null || $bodyEnd === null)
+        {
+            continue;
+        }
+
+        $startToken = $tokenIndex - 1;
+
+        while ($startToken >= 0 && is_array($tokens[$startToken]) && in_array($tokens[$startToken][0], [T_WHITESPACE, T_PUBLIC, T_PROTECTED, T_PRIVATE, T_STATIC, T_FINAL, T_ABSTRACT, T_READONLY], true))
+        {
+            $startToken--;
+        }
+
+        if ($startToken >= 0 && is_array($tokens[$startToken]) && $tokens[$startToken][0] === T_DOC_COMMENT)
+        {
+            $startToken--;
+        }
+
+        $startToken++;
+        $endToken = $bodyEnd;
+
+        $methodsByRegion[$region][] = [
+            'end' => $tokenOffsets[$endToken] + strlen(is_array($tokens[$endToken]) ? $tokens[$endToken][1] : $tokens[$endToken]),
+            'function' => $tokenOffsets[$tokenIndex],
+            'kind' => $abstract && $static ? 0 : ($static ? 1 : ($abstract ? 2 : 3)),
+            'name' => $name,
+            'start' => $tokenOffsets[$startToken],
+        ];
+    }
+
+    $replacements = [];
+
+    foreach ($methodsByRegion as $methods)
+    {
+        $sortedMethods = $methods;
+        usort($sortedMethods, static function (array $first, array $second): int
+        {
+            return $first['kind'] === $second['kind'] ? strcasecmp($first['name'], $second['name']) : $first['kind'] <=> $second['kind'];
+        });
+
+        if (array_column($methods, 'name') === array_column($sortedMethods, 'name'))
+        {
+            continue;
+        }
+
+        $firstMethodStart = $methods[0]['function'];
+        $lineStart = strrpos(substr($contents, 0, $firstMethodStart), PHP_EOL);
+        $lineStart = $lineStart === false ? 0 : $lineStart + strlen(PHP_EOL);
+        $indent = substr($contents, $lineStart, $firstMethodStart - $lineStart);
+        $indent = preg_replace('/\S.*/', '', $indent) ?? '';
+        $chunks = [];
+
+        foreach ($sortedMethods as $method)
+        {
+            $chunks[] = $indent . trim(substr($contents, $method['start'], $method['end'] - $method['start']));
+        }
+
+        $replacements[] = [
+            'end' => $methods[count($methods) - 1]['end'],
+            'start' => $methods[0]['start'],
+            'value' => implode(PHP_EOL . PHP_EOL, $chunks),
+        ];
+    }
+
+    foreach (array_reverse($replacements) as $replacement)
+    {
+        $contents = substr_replace($contents, $replacement['value'], $replacement['start'], $replacement['end'] - $replacement['start']);
+    }
+
+    if ($replacements !== [])
+    {
+        file_put_contents($file, $contents);
+
+        $syntaxOutput = [];
+        $syntaxStatus = 0;
+        exec('php -l ' . escapeshellarg($file) . ' 2>&1', $syntaxOutput, $syntaxStatus);
+
+        if ($syntaxStatus !== 0)
+        {
+            file_put_contents($file, $originalContents);
+        }
+    }
+}

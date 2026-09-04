@@ -44,12 +44,6 @@ foreach (array_slice($argv, 1) as $file)
             $fileFailures++;
         }
 
-        if (preg_match('/(^|[^A-Za-z0-9_])(public|protected)\s+const(?:\s|$)/', $line) === 1 && preg_match('/\bfinal\s+(public|protected)\s+const(?:\s|$)/', $line) !== 1)
-        {
-            printf("FAIL missing final: %s:%d: %s\n", $file, $displayLine, $line);
-
-            $fileFailures++;
-        }
     }
 
     foreach ($lines as $lineNumber => $line)

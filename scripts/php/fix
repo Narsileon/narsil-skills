@@ -13,6 +13,34 @@ if (in_array('--help', $paths, true) || in_array('-h', $paths, true))
     exit(0);
 }
 
+passthru(escapeshellarg($scriptDirectory . '/fixes/fix-arrow-functions') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+
+if ($status !== 0)
+{
+    exit($status);
+}
+
+passthru(escapeshellarg($scriptDirectory . '/fixes/fix-empty-lines') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+
+if ($status !== 0)
+{
+    exit($status);
+}
+
+passthru(escapeshellarg($scriptDirectory . '/fixes/fix-region-hierarchy') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+
+if ($status !== 0)
+{
+    exit($status);
+}
+
+passthru(escapeshellarg($scriptDirectory . '/fixes/fix-member-order') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+
+if ($status !== 0)
+{
+    exit($status);
+}
+
 passthru(escapeshellarg($scriptDirectory . '/fixes/fix-phpdoc') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
 
 if ($status !== 0)
@@ -20,6 +48,6 @@ if ($status !== 0)
     exit($status);
 }
 
-passthru(escapeshellarg($scriptDirectory . '/fixes/fix-regions') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+passthru(escapeshellarg($scriptDirectory . '/fixes/fix-method-order') . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
 
 exit($status);

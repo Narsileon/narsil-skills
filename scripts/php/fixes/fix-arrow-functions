@@ -1,0 +1,191 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$files = [];
+
+foreach (array_slice($argv, 1) as $path)
+{
+    if (is_dir($path))
+    {
+        $excludedDirectories = array_values(array_filter([
+            realpath($path . DIRECTORY_SEPARATOR . 'vendor'),
+            realpath($path . DIRECTORY_SEPARATOR . 'node_modules'),
+        ]));
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+
+        foreach ($iterator as $file)
+        {
+            $realPath = realpath($file->getPathname()) ?: $file->getPathname();
+
+            if ($file->isFile() && $file->getExtension() === 'php' && !str_ends_with($realPath, '.blade.php') && !array_filter($excludedDirectories, static function (string $excludedDirectory) use ($realPath): bool
+            {
+                return str_starts_with($realPath, $excludedDirectory . DIRECTORY_SEPARATOR);
+            }))
+            {
+                $files[] = $file->getPathname();
+            }
+        }
+
+        continue;
+    }
+
+    if (is_file($path))
+    {
+        $files[] = $path;
+    }
+}
+
+foreach (array_values(array_unique($files)) as $file)
+{
+    $contents = (string)file_get_contents($file);
+    $originalContents = $contents;
+    $tokens = token_get_all($contents);
+    $offsets = [];
+    $offset = 0;
+
+    foreach ($tokens as $index => $token)
+    {
+        $offsets[$index] = $offset;
+        $offset += strlen(is_array($token) ? $token[1] : $token);
+    }
+
+    $replacements = [];
+    $tokenCount = count($tokens);
+
+    foreach ($tokens as $index => $token)
+    {
+        if (!is_array($token) || $token[0] !== T_FN)
+        {
+            continue;
+        }
+
+        $open = $index + 1;
+
+        while ($open < $tokenCount && is_array($tokens[$open]) && $tokens[$open][0] === T_WHITESPACE)
+        {
+            $open++;
+        }
+
+        if (($tokens[$open] ?? null) !== '(')
+        {
+            continue;
+        }
+
+        $parenthesisDepth = 1;
+        $close = $open;
+
+        for ($close++; $close < $tokenCount; $close++)
+        {
+            $text = is_array($tokens[$close]) ? $tokens[$close][1] : $tokens[$close];
+
+            if ($text === '(')
+            {
+                $parenthesisDepth++;
+            }
+            elseif ($text === ')')
+            {
+                $parenthesisDepth--;
+
+                if ($parenthesisDepth === 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        $arrow = $close + 1;
+
+        while ($arrow < $tokenCount && (!is_array($tokens[$arrow]) || $tokens[$arrow][0] !== T_DOUBLE_ARROW))
+        {
+            $arrow++;
+        }
+
+        if (!is_array($tokens[$arrow] ?? null) || $tokens[$arrow][0] !== T_DOUBLE_ARROW)
+        {
+            continue;
+        }
+
+        $expressionStart = $arrow + 1;
+        $expressionEnd = $expressionStart;
+        $depth = 0;
+
+        for (; $expressionEnd < $tokenCount; $expressionEnd++)
+        {
+            $text = is_array($tokens[$expressionEnd]) ? $tokens[$expressionEnd][1] : $tokens[$expressionEnd];
+
+            if (in_array($text, ['(', '[', '{'], true))
+            {
+                $depth++;
+            }
+            elseif (in_array($text, [')', ']', '}'], true))
+            {
+                if ($depth === 0)
+                {
+                    break;
+                }
+
+                $depth--;
+            }
+            elseif ($text === ',' && $depth === 0)
+            {
+                break;
+            }
+        }
+
+        $expression = trim(substr($contents, $offsets[$expressionStart], $offsets[$expressionEnd] - $offsets[$expressionStart]));
+
+        if ($expression === '')
+        {
+            continue;
+        }
+
+        $returnType = trim(substr($contents, $offsets[$close] + strlen($tokens[$close]), $offsets[$arrow] - ($offsets[$close] + strlen($tokens[$close]))));
+        $start = $index;
+
+        for ($previous = $index - 1; $previous >= 0; $previous--)
+        {
+            if (!is_array($tokens[$previous]) || $tokens[$previous][0] !== T_WHITESPACE)
+            {
+                if (is_array($tokens[$previous]) && $tokens[$previous][0] === T_STATIC)
+                {
+                    $start = $previous;
+                }
+
+                break;
+            }
+        }
+
+        $lineStart = strrpos(substr($contents, 0, $offsets[$start]), PHP_EOL);
+        $indent = $lineStart === false ? '' : preg_replace('/\S.*/', '', substr($contents, $lineStart + strlen(PHP_EOL), $offsets[$start] - $lineStart - strlen(PHP_EOL))) ?? '';
+        $prefix = $start !== $index ? 'static ' : '';
+        $replacement = $prefix . 'function ' . substr($contents, $offsets[$open], $offsets[$close] - $offsets[$open] + 1) . $returnType . PHP_EOL . $indent . '{' . PHP_EOL . $indent . '    return ' . $expression . ';' . PHP_EOL . $indent . '}';
+
+        $replacements[] = [
+            'end' => $offsets[$expressionEnd],
+            'start' => $offsets[$start],
+            'value' => $replacement,
+        ];
+    }
+
+    foreach (array_reverse($replacements) as $replacement)
+    {
+        $contents = substr_replace($contents, $replacement['value'], $replacement['start'], $replacement['end'] - $replacement['start']);
+    }
+
+    if ($contents === $originalContents)
+    {
+        continue;
+    }
+
+    file_put_contents($file, $contents);
+    $syntaxOutput = [];
+    $syntaxStatus = 0;
+    exec('php -l ' . escapeshellarg($file) . ' 2>&1', $syntaxOutput, $syntaxStatus);
+
+    if ($syntaxStatus !== 0)
+    {
+        file_put_contents($file, $originalContents);
+    }
+}

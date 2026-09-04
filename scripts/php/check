@@ -3,6 +3,10 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../../src/Enums/CheckEnum.php';
+
+use Narsil\Skills\Enums\CheckEnum;
+
 $scriptDirectory = __DIR__;
 $paths = array_slice($argv, 1);
 $successes = 0;
@@ -20,11 +24,44 @@ foreach ($paths as $path)
 {
     if (is_dir($path))
     {
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+        $excludedDirectories = array_values(array_filter([
+            realpath($path . DIRECTORY_SEPARATOR . 'vendor'),
+            realpath($path . DIRECTORY_SEPARATOR . 'node_modules'),
+        ]));
+        $directoryIterator = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
+        $filteredIterator = new RecursiveCallbackFilterIterator($directoryIterator, static function (SplFileInfo $file) use ($excludedDirectories): bool
+        {
+            $realPath = realpath($file->getPathname()) ?: $file->getPathname();
+
+            foreach ($excludedDirectories as $excludedDirectory)
+            {
+                if ($realPath === $excludedDirectory)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+        $iterator = new RecursiveIteratorIterator($filteredIterator);
 
         foreach ($iterator as $file)
         {
-            if ($file->isFile() && $file->getExtension() === 'php' && strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) === false)
+            $realPath = realpath($file->getPathname()) ?: $file->getPathname();
+
+            $isExcluded = false;
+
+            foreach ($excludedDirectories as $excludedDirectory)
+            {
+                if (str_starts_with($realPath, $excludedDirectory . DIRECTORY_SEPARATOR))
+                {
+                    $isExcluded = true;
+
+                    break;
+                }
+            }
+
+            if ($file->isFile() && $file->getExtension() === 'php' && !str_ends_with($realPath, '.blade.php') && !$isExcluded)
             {
                 $phpFiles[] = $file->getPathname();
             }
@@ -56,7 +93,7 @@ if ($paths === [])
 
         foreach ($iterator as $file)
         {
-            if ($file->isFile() && $file->getExtension() === 'php' && strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) === false)
+            if ($file->isFile() && $file->getExtension() === 'php' && !str_ends_with($file->getPathname(), '.blade.php') && strpos($file->getPathname(), DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR) === false)
             {
                 $phpFiles[] = $file->getPathname();
             }
@@ -66,26 +103,24 @@ if ($paths === [])
 
 $phpFiles = array_values(array_unique($phpFiles));
 
-foreach ($phpFiles as $file)
+foreach (CheckEnum::cases() as $check)
 {
-    foreach (['check-syntax', 'check-style', 'check-phpdoc', 'check-regions'] as $check)
+    if ($phpFiles === [])
     {
-        $status = 0;
-        passthru(escapeshellarg($scriptDirectory . '/checks/' . $check) . ' ' . escapeshellarg($file), $status);
+        continue;
+    }
 
-        if ($status === 0)
-        {
-            $successes++;
-        }
-        else
-        {
-            $failures++;
-        }
+    $arguments = implode(' ', array_map('escapeshellarg', $phpFiles));
+    $status = 0;
+    passthru(escapeshellarg($scriptDirectory . '/checks/' . $check->value) . ' ' . $arguments, $status);
 
-        if ($check === 'check-syntax' && $status !== 0)
-        {
-            break;
-        }
+    if ($status === 0)
+    {
+        $successes++;
+    }
+    else
+    {
+        $failures++;
     }
 }
 
