@@ -1,0 +1,104 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$failures = 0;
+
+foreach (array_slice($argv, 1) as $file)
+{
+    $tokens = token_get_all((string) file_get_contents($file));
+    $functions = [];
+    $braceDepth = 0;
+    $function = null;
+    $functionBraceDepth = null;
+
+    foreach ($tokens as $token)
+    {
+        $id = is_array($token) ? $token[0] : null;
+        $text = is_array($token) ? $token[1] : $token;
+        $line = is_array($token) ? $token[2] : 0;
+
+        if ($id === T_FUNCTION)
+        {
+            $function = [
+                'line' => $line,
+                'name' => '',
+                'returns' => 0,
+                'has_calculation' => false,
+                'has_control_structure' => false,
+            ];
+        }
+
+        if ($function !== null)
+        {
+            if ($id === T_STRING && $function['name'] === '')
+            {
+                $function['name'] = $text;
+            }
+
+            if ($id === T_RETURN)
+            {
+                $function['returns']++;
+            }
+
+            if (in_array($id, [T_ELSEIF, T_FOR, T_FOREACH, T_IF, T_SWITCH, T_TRY, T_WHILE], true))
+            {
+                $function['has_control_structure'] = true;
+            }
+
+            if ($function['name'] === '__construct' && $id === T_STRING && in_array($text, [
+                'Arr',
+                'array_filter',
+                'array_map',
+                'collect',
+                'count',
+                'data_get',
+                'in_array',
+                'json_encode',
+                'method_exists',
+                'route',
+            ], true))
+            {
+                $function['has_calculation'] = true;
+            }
+        }
+
+        if ($text === '{')
+        {
+            $braceDepth++;
+
+            if ($function !== null && $functionBraceDepth === null)
+            {
+                $functionBraceDepth = $braceDepth;
+            }
+        }
+
+        if ($text !== '}' || $function === null || $functionBraceDepth !== $braceDepth)
+        {
+            continue;
+        }
+
+        $functions[] = $function;
+        $function = null;
+        $functionBraceDepth = null;
+        $braceDepth--;
+    }
+
+    foreach ($functions as $method)
+    {
+        if ($method['returns'] > 1)
+        {
+            printf("FAIL method returns: %s:%d: %s has %d return statements; use one return per method\n", $file, $method['line'], $method['name'], $method['returns']);
+            $failures++;
+        }
+
+        if ($method['name'] === '__construct' && ($method['has_control_structure'] || $method['has_calculation']))
+        {
+            printf("FAIL constructor logic: %s:%d: __construct contains control-flow logic; move calculations into private methods\n", $file, $method['line']);
+            $failures++;
+        }
+    }
+}
+
+exit($failures > 0 ? 1 : 0);

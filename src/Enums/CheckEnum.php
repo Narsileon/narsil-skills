@@ -19,6 +19,10 @@ enum CheckEnum: string
     /**
      * @var string
      */
+    case METHOD_RETURN = 'check-method-return';
+    /**
+     * @var string
+     */
     case PHPDOC = 'check-phpdoc';
     /**
      * @var string
