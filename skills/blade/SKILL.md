@@ -96,12 +96,15 @@ Do **not** use `$attributes->merge(['class' => '…'])` for Tailwind — it does
 | `resources/views/components/**/*.blade.php` | Markup, **classes**, **variants** (inline `@php`) |
 
 - Keep variant maps and class strings out of the PHP class.
-- Keep business / presentation logic out of the Blade (no queries, no heavy branching beyond class/`match` for variants).
+- Keep all computed values, defaults, normalization, route resolution, active state, and persistence out of Blade. Put them in the View Component class as properties or private methods.
+- Inline `@php` is only for local class/variant assembly; do not use it to calculate values consumed by the markup.
+- Keep business / presentation logic out of the Blade (no queries, route checks, or heavy branching beyond class/`match` for variants).
 
 ## Component class
 
 - `final class` matching the view path: `App\View\Components\Ui\Button`, `App\View\Components\Icons\Check`, `App\View\Components\Hero`, `App\View\Components\Hero\Cta`, `App\View\Components\Home\FeatureCard` (or package namespace). Icons may be anonymous Blade (no class) when they are SVG-only.
 - Follow [php](../php/SKILL.md): no constructor property promotion; typed props in `PROPERTIES`; assign in `__construct`.
+- Keep constructors focused on assigning state. Delegate non-trivial normalization, derived values, route resolution, and conditional setup to private methods.
 - Public props for anything the view needs (`$variant`, `$size`, …).
 - `render(): View` returns the matching view (`view('components.ui.button')`, `view('components.icons.check')`, `view('components.hero')`, `view('components.hero.cta')`, `view('components.home.feature-card')`).
 
