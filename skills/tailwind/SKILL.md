@@ -19,3 +19,15 @@ Use `[…]` only when no scale token matches.
 
 - **Blade / PHP:** `twMerge()` via [gehrisandro/tailwind-merge-laravel](https://github.com/gehrisandro/tailwind-merge-laravel) — see [blade](../blade/SKILL.md).
 - **React / TS:** project `cn()` (typically `clsx` + `tailwind-merge`) — see [react](../react/SKILL.md).
+
+## Pseudo-elements
+
+When using `before:` or `after:` classes in React / TS, put the base, `before:`, and `after:` classes on separate lines and merge them with `cn()`:
+
+```tsx
+className={cn(
+  'relative ...',
+  'before:absolute before:...',
+  'after:absolute after:...',
+)}
+```
