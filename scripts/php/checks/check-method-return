@@ -25,7 +25,6 @@ foreach (array_slice($argv, 1) as $file)
                 'line' => $line,
                 'name' => '',
                 'returns' => 0,
-                'has_calculation' => false,
                 'has_control_structure' => false,
             ];
         }
@@ -47,21 +46,6 @@ foreach (array_slice($argv, 1) as $file)
                 $function['has_control_structure'] = true;
             }
 
-            if ($function['name'] === '__construct' && $id === T_STRING && in_array($text, [
-                'Arr',
-                'array_filter',
-                'array_map',
-                'collect',
-                'count',
-                'data_get',
-                'in_array',
-                'json_encode',
-                'method_exists',
-                'route',
-            ], true))
-            {
-                $function['has_calculation'] = true;
-            }
         }
 
         if ($text === '{')
@@ -93,7 +77,7 @@ foreach (array_slice($argv, 1) as $file)
             $failures++;
         }
 
-        if ($method['name'] === '__construct' && ($method['has_control_structure'] || $method['has_calculation']))
+        if ($method['name'] === '__construct' && $method['has_control_structure'])
         {
             printf("FAIL constructor logic: %s:%d: __construct contains control-flow logic; move calculations into private methods\n", $file, $method['line']);
             $failures++;

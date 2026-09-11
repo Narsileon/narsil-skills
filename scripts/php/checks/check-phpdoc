@@ -234,7 +234,36 @@ foreach (array_slice($argv, 1) as $file)
         }
         elseif ($inClass && $id === T_VARIABLE && $parenDepth === 0)
         {
-            $check($docBefore($tokens, $tokenPosition, true), $line, 'property', 'var', []);
+            $propertyDeclaration = false;
+
+            for ($propertyIndex = $tokenPosition - 1; $propertyIndex >= 0; $propertyIndex--)
+            {
+                $propertyToken = $tokens[$propertyIndex];
+
+                if ($propertyToken === ';' || $propertyToken === '{' || $propertyToken === '}' || $propertyToken === '(' || (is_array($propertyToken) && $propertyToken[0] === T_FUNCTION))
+                {
+                    break;
+                }
+
+                if (is_array($propertyToken) && in_array($propertyToken[0], [T_PUBLIC, T_PROTECTED, T_PRIVATE, T_STATIC, T_VAR], true))
+                {
+                    $propertyDeclaration = true;
+
+                    break;
+                }
+            }
+
+            if ($propertyDeclaration || $docBefore($tokens, $tokenPosition, true) !== null)
+            {
+                $propertyDoc = $docBefore($tokens, $tokenPosition, true);
+
+                if ($propertyDoc !== null && preg_match('/@(?:param|return)\\b/', $propertyDoc[1]) === 1)
+                {
+                    continue;
+                }
+
+                $check($propertyDoc, $line, 'property', 'var', []);
+            }
         }
     }
 
