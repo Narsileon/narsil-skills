@@ -25,6 +25,7 @@ Copy templates into the target project. The stub is the contract — match its `
 - Do not mark methods `final` when the class is already `final` (redundant). Use `final` on methods only for `public` / `protected` methods on a non-`final` class that must not be overridden.
 - `#region` / `#endregion` only — never `// region`.
 - **Never write an empty region** — omit `#region` / `#endregion` entirely when that section has no members (no empty `CONSTRUCTOR`, `CONSTANTS`, `PROPERTIES`, `PRIVATE METHODS`, or `USE`). Only emit a region that contains at least one `use`, constant, property, or method. Keep relative order from the table above for regions that do exist.
+- Imports must be enclosed in a `USE` region whenever the file contains namespace imports. Member regions are required whenever the corresponding constructor, property, constant, or method exists.
 - `use` statements sorted alphabetically in the `USE` region.
 - Constants and properties are sorted alphabetically within each region. Every method region (`PUBLIC METHODS`, `PROTECTED METHODS`, and `PRIVATE METHODS`) groups methods as abstract static first, static second, abstract third, then normal methods; methods are sorted alphabetically within each group (`__construct` in `CONSTRUCTOR`).
 - Use constants for database table and column names. Never hardcode database identifiers as string literals in application queries, relationships, repositories, or migrations; define a descriptive constant on the relevant model or table class first.

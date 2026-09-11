@@ -143,6 +143,30 @@ foreach (array_values(array_unique($files)) as $file)
 {
     $contents = (string)file_get_contents($file);
     $originalContents = $contents;
+
+    if (preg_match('/^\s*#region USE\s*$/m', $contents) !== 1 && preg_match('/^\s*use\s+[^({;]+;\s*$/m', $contents) === 1)
+    {
+        $lines = preg_split('/\R/', rtrim($contents, "\r\n"));
+        $importIndexes = [];
+
+        foreach ($lines as $lineIndex => $line)
+        {
+            if (preg_match('/^\s*use\s+[^({;]+;\s*$/', $line) === 1)
+            {
+                $importIndexes[] = $lineIndex;
+            }
+        }
+
+        if ($importIndexes !== [])
+        {
+            $firstImport = $importIndexes[0];
+            $lastImport = $importIndexes[count($importIndexes) - 1];
+            array_splice($lines, $lastImport + 1, 0, ['', '#endregion']);
+            array_splice($lines, $firstImport, 0, ['#region USE', '']);
+            $contents = implode(PHP_EOL, $lines) . PHP_EOL;
+        }
+    }
+
     $contents = $reorderRegions($contents);
 
     if ($contents !== $originalContents)

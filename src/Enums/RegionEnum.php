@@ -49,6 +49,34 @@ enum RegionEnum: string
 
     #region PUBLIC METHODS
 
+        /**
+     * @return string
+     */
+    public static function memberPattern(): string
+    {
+        return implode('|', array_map(static function (self $region): string
+        {
+            return $region->pattern();
+        }, array_filter(self::cases(), static function (self $region): bool
+        {
+            return $region->isMember();
+        })));
+    }
+
+    /**
+     * @return string[]
+     */
+    public static function memberValues(): array
+    {
+        return array_map(static function (self $region): string
+        {
+            return $region->value;
+        }, array_filter(self::cases(), static function (self $region): bool
+        {
+            return $region->isMember();
+        }));
+    }
+
     /**
      * @return boolean
      */
@@ -105,34 +133,6 @@ enum RegionEnum: string
             self::PROTECTED_METHODS => 80,
             self::PRIVATE_METHODS => 90,
         };
-    }
-
-    /**
-     * @return string[]
-     */
-    public static function memberValues(): array
-    {
-        return array_map(static function (self $region): string
-        {
-            return $region->value;
-        }, array_filter(self::cases(), static function (self $region): bool
-        {
-            return $region->isMember();
-        }));
-    }
-
-    /**
-     * @return string
-     */
-    public static function memberPattern(): string
-    {
-        return implode('|', array_map(static function (self $region): string
-        {
-            return $region->pattern();
-        }, array_filter(self::cases(), static function (self $region): bool
-        {
-            return $region->isMember();
-        })));
     }
 
     #endregion

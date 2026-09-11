@@ -61,6 +61,15 @@ foreach (array_slice($argv, 1) as $file)
         }
     }
 
+    $hasImports = preg_match('/^\s*use\s+[^({;]+;\s*$/m', $contents) === 1;
+
+    if ($hasImports && preg_match('/^\s*#region USE\s*$/m', $contents) !== 1)
+    {
+        printf("FAIL region presence: %s: import statements require a USE region\n", $file);
+
+        $fileFailures++;
+    }
+
     if (preg_match('/function\s+__construct\s*\((.*?)\)/s', $contents, $matches, PREG_OFFSET_CAPTURE) === 1 && preg_match('/(^|[^A-Za-z0-9_])(public|protected|private)\s+/', $matches[1][0]) === 1)
     {
         $constructorLine = substr_count(substr($contents, 0, (int)$matches[0][1]), "\n") + 1;
