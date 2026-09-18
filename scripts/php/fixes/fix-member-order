@@ -51,6 +51,8 @@ foreach (RegionEnum::cases() as $region)
     }
 }
 
+asort($regionNames, SORT_NUMERIC);
+
 $memberRegionPattern = RegionEnum::memberPattern();
 $reorderRegions = static function (string $contents) use ($regionNames, $memberRegionPattern): string
 {
