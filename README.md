@@ -60,7 +60,7 @@ vendor/narsil/skills/scripts/php/checks/check-method-order
 vendor/narsil/skills/scripts/php/checks/check-enum-regions
 ```
 
-The fixer pipeline first runs `fix-empty-lines`, which collapses consecutive blank lines, then `fix-member-order`. The structural member-order fixer creates canonical regions and moves complete class members into constructor, constants, properties, and method groups. It skips ambiguous classes with existing internal regions or unsupported class-level statements. The method-order fixer is available as `fix-method-order`; `fix-regions` remains an alias for compatibility.
+The fixer pipeline runs `fix-empty-lines`, PHPDoc normalization, region normalization, member ordering, region normalization again, and method ordering. `fix-regions` owns `USE` and member-region creation, repair, and ordering. `fix-member-order` sorts non-method members inside existing regions, while `fix-method-order` sorts methods inside method regions. `fix-region-hierarchy` only repairs nesting and missing region closures.
 
 ## Deployment / CI
 

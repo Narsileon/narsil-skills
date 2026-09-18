@@ -3,15 +3,809 @@
 
 declare(strict_types=1);
 
-$scriptDirectory = __DIR__;
-$arguments = array_slice($argv, 1);
-$command = escapeshellarg($scriptDirectory . '/fix-method-order');
+require_once __DIR__ . '/../../../src/Enums/RegionEnum.php';
 
-if ($arguments !== [])
+use Narsil\Skills\Enums\RegionEnum;
+
+$files = [];
+
+foreach (array_slice($argv, 1) as $path)
 {
-    $command .= ' ' . implode(' ', array_map('escapeshellarg', $arguments));
+    if (is_dir($path))
+    {
+        $excludedDirectories = array_values(array_filter([
+            realpath($path . DIRECTORY_SEPARATOR . 'vendor'),
+            realpath($path . DIRECTORY_SEPARATOR . 'node_modules'),
+        ]));
+        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+
+        foreach ($iterator as $file)
+        {
+            $realPath = realpath($file->getPathname()) ?: $file->getPathname();
+
+            if ($file->isFile() && $file->getExtension() === 'php' && !str_ends_with($realPath, '.blade.php') && !array_filter($excludedDirectories, static function (string $excludedDirectory) use ($realPath): bool
+            {
+                return str_starts_with($realPath, $excludedDirectory . DIRECTORY_SEPARATOR);
+            }))
+            {
+                $files[] = $file->getPathname();
+            }
+        }
+
+        continue;
+    }
+
+    if (is_file($path))
+    {
+        $files[] = $path;
+    }
 }
 
-passthru($command, $status);
+$regionNames = [];
 
-exit($status);
+foreach (RegionEnum::cases() as $region)
+{
+    if ($region->isMember())
+    {
+        $regionNames[$region->value] = $region->sortOrder();
+    }
+}
+
+asort($regionNames, SORT_NUMERIC);
+
+$memberRegionPattern = RegionEnum::memberPattern();
+$reorderRegions = static function (string $contents) use ($regionNames, $memberRegionPattern): string
+{
+    $lines = preg_split('/\R/', rtrim($contents, "\r\n"));
+    $blocks = [];
+    $lineCount = count($lines);
+
+    for ($lineIndex = 0; $lineIndex < $lineCount; $lineIndex++)
+    {
+        if (preg_match('/^(\s*)#region\s+(' . $memberRegionPattern . ')\s*$/', $lines[$lineIndex], $matches) !== 1 || strlen($matches[1]) === 0)
+        {
+            continue;
+        }
+
+        $depth = 1;
+
+        for ($endIndex = $lineIndex + 1; $endIndex < $lineCount; $endIndex++)
+        {
+            if (preg_match('/^\s*#region\s+/', $lines[$endIndex]) === 1)
+            {
+                $depth++;
+            }
+
+            if (preg_match('/^\s*#endregion\s*$/', $lines[$endIndex]) === 1)
+            {
+                $depth--;
+            }
+
+            if ($depth === 0)
+            {
+                $blocks[] = [
+                    'end' => $endIndex,
+                    'name' => $matches[2],
+                    'start' => $lineIndex,
+                ];
+
+                $lineIndex = $endIndex;
+
+                break;
+            }
+        }
+    }
+
+    if (count($blocks) < 2)
+    {
+        return $contents;
+    }
+
+    $firstBlock = $blocks[0];
+    $lastBlock = $blocks[count($blocks) - 1];
+
+    for ($blockIndex = 1; $blockIndex < count($blocks); $blockIndex++)
+    {
+        $gap = array_slice($lines, $blocks[$blockIndex - 1]['end'] + 1, $blocks[$blockIndex]['start'] - $blocks[$blockIndex - 1]['end'] - 1);
+
+        if (array_filter($gap, static function (string $line): bool
+        {
+            return trim($line) !== '';
+        }) !== [])
+        {
+            return $contents;
+        }
+    }
+
+    $sortedBlocks = $blocks;
+    usort($sortedBlocks, static function (array $first, array $second) use ($regionNames): int
+    {
+        return $regionNames[$first['name']] <=> $regionNames[$second['name']];
+    });
+
+    if (array_column($blocks, 'name') === array_column($sortedBlocks, 'name'))
+    {
+        return $contents;
+    }
+
+    $replacement = [];
+
+    foreach ($sortedBlocks as $block)
+    {
+        $replacement = array_merge($replacement, array_slice($lines, $block['start'], $block['end'] - $block['start'] + 1), ['']);
+    }
+
+    array_pop($replacement);
+    array_splice($lines, $firstBlock['start'], $lastBlock['end'] - $firstBlock['start'] + 1, $replacement);
+
+    return implode(PHP_EOL, $lines) . PHP_EOL;
+};
+
+$addMissingMethodRegions = static function (string $contents) use ($regionNames): string
+{
+    $tokens = token_get_all($contents);
+    $offsets = [];
+    $offset = 0;
+
+    foreach ($tokens as $index => $token)
+    {
+        $offsets[$index] = $offset;
+        $offset += strlen(is_array($token) ? $token[1] : $token);
+    }
+
+    $braceDepth = 0;
+    $classDepth = null;
+    $classBodyDepth = null;
+    $classOpening = null;
+    $classClosing = null;
+    $classCount = 0;
+    $tokenCount = count($tokens);
+
+    foreach ($tokens as $index => $token)
+    {
+        $id = is_array($token) ? $token[0] : null;
+        $text = is_array($token) ? $token[1] : $token;
+
+        if (in_array($id, [T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT], true))
+        {
+            $classCount++;
+            $next = $index + 1;
+
+            while ($next < $tokenCount && is_array($tokens[$next]) && $tokens[$next][0] !== T_STRING)
+            {
+                $next++;
+            }
+
+            if (!isset($tokens[$next]))
+            {
+                continue;
+            }
+
+            for ($opening = $next + 1; $opening < $tokenCount; $opening++)
+            {
+                if (($tokens[$opening] ?? null) !== '{')
+                {
+                    continue;
+                }
+
+                $classDepth = $braceDepth + 1;
+                $classBodyDepth = $classDepth;
+                $classOpening = $opening;
+
+                break;
+            }
+        }
+
+        if ($text === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($text !== '}' || $classDepth === null || $braceDepth !== $classDepth)
+        {
+            if ($text === '}')
+            {
+                $braceDepth--;
+            }
+
+            continue;
+        }
+
+        $classClosing = $index;
+        $classDepth = null;
+        $braceDepth--;
+    }
+
+    if ($classCount !== 1 || $classOpening === null || $classClosing === null)
+    {
+        return $contents;
+    }
+
+    $bodyStart = $offsets[$classOpening] + 1;
+    $bodyEnd = $offsets[$classClosing];
+    $hasRegion = false;
+
+    foreach ($tokens as $index => $token)
+    {
+        if (!is_array($token) || $token[0] !== T_COMMENT || $offsets[$index] < $bodyStart || $offsets[$index] >= $bodyEnd)
+        {
+            continue;
+        }
+
+        if (preg_match('/^#region\s+/', trim($token[1])) === 1)
+        {
+            $hasRegion = true;
+
+            break;
+        }
+    }
+
+    if (!$hasRegion)
+    {
+        return $contents;
+    }
+
+    $braceDepth = 0;
+    $region = null;
+    $methods = [];
+    $inClass = false;
+    $modifierTokens = [T_PUBLIC, T_PROTECTED, T_PRIVATE, T_STATIC, T_FINAL, T_ABSTRACT, T_READONLY];
+
+    foreach ($tokens as $index => $token)
+    {
+        $id = is_array($token) ? $token[0] : null;
+        $text = is_array($token) ? $token[1] : $token;
+
+        if ($index === $classOpening)
+        {
+            $inClass = true;
+        }
+
+        if ($inClass && $id === T_COMMENT)
+        {
+            if (preg_match('/^#region\s+(.+)$/', trim($text), $matches) === 1)
+            {
+                $region = trim($matches[1]);
+            }
+            elseif (trim($text) === '#endregion')
+            {
+                $region = null;
+            }
+        }
+
+        if ($text === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($text === '}')
+        {
+            $braceDepth--;
+        }
+
+        if ($id !== T_FUNCTION || !$inClass || $braceDepth !== $classBodyDepth || $region !== null)
+        {
+            continue;
+        }
+
+        $visibility = RegionEnum::PUBLIC_METHODS->value;
+        $startToken = $index;
+        $modifierIndex = $index - 1;
+
+        while ($modifierIndex >= 0)
+        {
+            $modifier = $tokens[$modifierIndex];
+
+            if (is_array($modifier) && $modifier[0] === T_WHITESPACE)
+            {
+                $modifierIndex--;
+
+                continue;
+            }
+
+            if (is_array($modifier) && in_array($modifier[0], $modifierTokens, true))
+            {
+                if ($modifier[0] === T_PRIVATE)
+                {
+                    $visibility = RegionEnum::PRIVATE_METHODS->value;
+                }
+
+                if ($modifier[0] === T_PROTECTED)
+                {
+                    $visibility = RegionEnum::PROTECTED_METHODS->value;
+                }
+
+                $startToken = $modifierIndex;
+                $modifierIndex--;
+
+                continue;
+            }
+
+            break;
+        }
+
+        while ($modifierIndex >= 0 && is_array($tokens[$modifierIndex]) && $tokens[$modifierIndex][0] === T_WHITESPACE)
+        {
+            $modifierIndex--;
+        }
+
+        if ($modifierIndex >= 0 && is_array($tokens[$modifierIndex]) && $tokens[$modifierIndex][0] === T_DOC_COMMENT)
+        {
+            $startToken = $modifierIndex;
+        }
+
+        $bodyStartToken = null;
+        $bodyEndToken = null;
+        $bodyDepth = 0;
+
+        for ($lookAhead = $index + 1; $lookAhead < $tokenCount; $lookAhead++)
+        {
+            $lookAheadToken = $tokens[$lookAhead];
+            $lookAheadText = is_array($lookAheadToken) ? $lookAheadToken[1] : $lookAheadToken;
+
+            if ($lookAheadText !== '{' && $lookAheadText !== ';')
+            {
+                continue;
+            }
+
+            $bodyStartToken = $lookAhead;
+
+            if ($lookAheadText === ';')
+            {
+                $bodyEndToken = $lookAhead;
+
+                break;
+            }
+
+            $bodyDepth = 1;
+
+            for ($bodyIndex = $lookAhead + 1; $bodyIndex < $tokenCount; $bodyIndex++)
+            {
+                $bodyToken = $tokens[$bodyIndex];
+                $bodyText = is_array($bodyToken) ? $bodyToken[1] : $bodyToken;
+
+                if ($bodyText === '{')
+                {
+                    $bodyDepth++;
+                }
+                elseif ($bodyText === '}')
+                {
+                    $bodyDepth--;
+
+                    if ($bodyDepth === 0)
+                    {
+                        $bodyEndToken = $bodyIndex;
+
+                        break;
+                    }
+                }
+            }
+
+            break;
+        }
+
+        if ($bodyStartToken === null || $bodyEndToken === null)
+        {
+            continue;
+        }
+
+        $methods[] = [
+            'end' => $offsets[$bodyEndToken] + strlen(is_array($tokens[$bodyEndToken]) ? $tokens[$bodyEndToken][1] : $tokens[$bodyEndToken]),
+            'region' => $visibility,
+            'start' => $offsets[$startToken],
+        ];
+    }
+
+    if ($methods === [])
+    {
+        return $contents;
+    }
+
+    $groups = [];
+
+    foreach ($methods as $method)
+    {
+        $groupIndex = count($groups) - 1;
+
+        if ($groupIndex < 0 || $groups[$groupIndex]['region'] !== $method['region'] || trim(substr($contents, $groups[$groupIndex]['end'], $method['start'] - $groups[$groupIndex]['end'])) !== '')
+        {
+            $groups[] = [
+                'end' => $method['end'],
+                'methods' => [$method],
+                'region' => $method['region'],
+                'start' => $method['start'],
+            ];
+
+            continue;
+        }
+
+        $groups[$groupIndex]['end'] = $method['end'];
+        $groups[$groupIndex]['methods'][] = $method;
+    }
+
+    $enumOrClassLineStart = strrpos(substr($contents, 0, $offsets[$classOpening]), PHP_EOL);
+    $classIndent = $enumOrClassLineStart === false ? '' : preg_replace('/\S.*/', '', substr($contents, $enumOrClassLineStart + strlen(PHP_EOL), $offsets[$classOpening] - $enumOrClassLineStart - strlen(PHP_EOL))) ?? '';
+    $memberIndent = $classIndent . '    ';
+
+    foreach (array_reverse($groups) as $group)
+    {
+        $replacement = $memberIndent . '#region ' . $group['region'] . PHP_EOL . PHP_EOL;
+        $replacement .= implode(PHP_EOL . PHP_EOL, array_map(static function (array $method) use ($contents, $memberIndent): string
+        {
+            return $memberIndent . trim(substr($contents, $method['start'], $method['end'] - $method['start']));
+        }, $group['methods']));
+        $replacement .= PHP_EOL . PHP_EOL . $memberIndent . '#endregion';
+        $replacementStart = strrpos(substr($contents, 0, $group['start']), PHP_EOL);
+        $replacementStart = $replacementStart === false ? 0 : $replacementStart + strlen(PHP_EOL);
+        $contents = substr_replace($contents, $replacement, $replacementStart, $group['end'] - $replacementStart);
+    }
+
+    return $contents;
+};
+
+foreach (array_values(array_unique($files)) as $file)
+{
+    $contents = (string)file_get_contents($file);
+    $originalContents = $contents;
+
+    if (preg_match('/^\s*#region USE\s*$/m', $contents) !== 1)
+    {
+        $lines = preg_split('/\R/', rtrim($contents, "\r\n"));
+        $importIndexes = [];
+        $braceDepth = 0;
+        $tokens = token_get_all($contents);
+
+        foreach ($tokens as $tokenIndex => $token)
+        {
+            $id = is_array($token) ? $token[0] : null;
+            $text = is_array($token) ? $token[1] : $token;
+
+            if ($text === '{')
+            {
+                $braceDepth++;
+            }
+
+            if ($text === '}')
+            {
+                $braceDepth--;
+            }
+
+            if ($id !== T_USE || $braceDepth !== 0)
+            {
+                continue;
+            }
+
+            $next = $tokenIndex + 1;
+
+            while (isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] === T_WHITESPACE)
+            {
+                $next++;
+            }
+
+            if (($tokens[$next] ?? null) === '(')
+            {
+                continue;
+            }
+
+            $lineIndex = $token[2] - 1;
+
+            if (preg_match('/^\s*use\s+[^({;]+;\s*$/', $lines[$lineIndex] ?? '') === 1)
+            {
+                $importIndexes[] = $lineIndex;
+            }
+        }
+
+        if ($importIndexes !== [])
+        {
+            $firstImport = $importIndexes[0];
+            $lastImport = $importIndexes[count($importIndexes) - 1];
+            array_splice($lines, $lastImport + 1, 0, ['', '#endregion']);
+            array_splice($lines, $firstImport, 0, ['#region USE', '']);
+            $contents = implode(PHP_EOL, $lines) . PHP_EOL;
+        }
+    }
+
+    $contents = $reorderRegions($contents);
+
+    if ($contents !== $originalContents)
+    {
+        file_put_contents($file, $contents);
+    }
+
+    $contents = $addMissingMethodRegions($contents);
+    $contents = $reorderRegions($contents);
+
+    if ($contents !== $originalContents)
+    {
+        file_put_contents($file, $contents);
+    }
+
+    $tokens = token_get_all($contents);
+    $offsets = [];
+    $offset = 0;
+
+    foreach ($tokens as $index => $token)
+    {
+        $offsets[$index] = $offset;
+        $offset += strlen(is_array($token) ? $token[1] : $token);
+    }
+
+    $braceDepth = 0;
+    $classDepth = null;
+    $classOpening = null;
+    $classClosing = null;
+    $classCount = 0;
+    $tokenCount = count($tokens);
+
+    foreach ($tokens as $index => $token)
+    {
+        $id = is_array($token) ? $token[0] : null;
+        $text = is_array($token) ? $token[1] : $token;
+
+        if (in_array($id, [T_CLASS, T_INTERFACE, T_TRAIT], true))
+        {
+            $classCount++;
+            $next = $index + 1;
+
+            while (isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] !== T_STRING)
+            {
+                $next++;
+            }
+
+            if (!isset($tokens[$next]))
+            {
+                continue;
+            }
+
+            for ($opening = $next + 1; $opening < $tokenCount; $opening++)
+            {
+                if (($tokens[$opening] ?? null) === '{')
+                {
+                    $classDepth = $braceDepth + 1;
+                    $classOpening = $opening;
+
+                    break;
+                }
+            }
+        }
+
+        if ($text === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($text !== '}' || $classDepth === null || $braceDepth !== $classDepth)
+        {
+            if ($text === '}')
+            {
+                $braceDepth--;
+            }
+
+            continue;
+        }
+
+        $classClosing = $index;
+        $classDepth = null;
+        $braceDepth--;
+    }
+
+    if ($classCount !== 1 || $classOpening === null || $classClosing === null)
+    {
+        continue;
+    }
+
+    $bodyStart = $offsets[$classOpening] + 1;
+    $bodyEnd = $offsets[$classClosing];
+    $body = substr($contents, $bodyStart, $bodyEnd - $bodyStart);
+
+    if (preg_match('/^\s*#region\s+/', $body, $matches) === 1 && preg_match('/#region\s+/', $body) === 1)
+    {
+        continue;
+    }
+
+    $braceDepth = 0;
+    $members = [];
+    $memberStart = null;
+    $memberKind = null;
+    $memberVisibility = RegionEnum::PUBLIC_METHODS->value;
+    $memberEnd = null;
+    $inClass = false;
+
+    foreach ($tokens as $index => $token)
+    {
+        $id = is_array($token) ? $token[0] : null;
+        $text = is_array($token) ? $token[1] : $token;
+
+        if ($index === $classOpening)
+        {
+            $inClass = true;
+        }
+
+        if (!$inClass)
+        {
+            continue;
+        }
+
+        if ($text === '{')
+        {
+            $braceDepth++;
+        }
+
+        if ($text === '}')
+        {
+            $braceDepth--;
+        }
+
+        if ($braceDepth !== 1 || $index <= $classOpening || $index >= $classClosing)
+        {
+            continue;
+        }
+
+        if ($memberStart !== null)
+        {
+            if (in_array($memberKind, ['CONSTRUCTOR', 'METHOD'], true) && $memberEnd === null && $text === '}')
+            {
+                $memberEnd = $index;
+            }
+
+            if ($memberKind !== 'METHOD' && $text === ';')
+            {
+                $memberEnd = $index;
+            }
+
+            if ($memberEnd !== null)
+            {
+                $members[] = [
+                    'end' => $offsets[$memberEnd] + strlen(is_array($tokens[$memberEnd]) ? $tokens[$memberEnd][1] : $tokens[$memberEnd]),
+                    'region' => match ($memberKind)
+                    {
+                        'CONSTANT' => RegionEnum::CONSTANTS->value,
+                        'PROPERTY' => RegionEnum::PROPERTIES->value,
+                        'CONSTRUCTOR' => RegionEnum::CONSTRUCTOR->value,
+                        default => $memberVisibility,
+                    },
+                    'start' => $offsets[$memberStart],
+                ];
+                $memberStart = null;
+                $memberKind = null;
+                $memberEnd = null;
+            }
+
+            continue;
+        }
+
+        if (!in_array($id, [T_FUNCTION, T_CONST, T_VARIABLE], true))
+        {
+            continue;
+        }
+
+        $memberStart = $index;
+        $memberKind = $id === T_CONST ? 'CONSTANT' : ($id === T_VARIABLE ? 'PROPERTY' : 'METHOD');
+        $memberVisibility = RegionEnum::PUBLIC_METHODS->value;
+
+        for ($modifierIndex = $index - 1; $modifierIndex >= 0; $modifierIndex--)
+        {
+            $modifier = $tokens[$modifierIndex];
+
+            if (is_array($modifier) && $modifier[0] === T_PRIVATE)
+            {
+                $memberVisibility = RegionEnum::PRIVATE_METHODS->value;
+            }
+
+            if (is_array($modifier) && $modifier[0] === T_PROTECTED)
+            {
+                $memberVisibility = RegionEnum::PROTECTED_METHODS->value;
+            }
+
+            if (!is_array($modifier) || ($modifier[0] !== T_WHITESPACE && !in_array($modifier[0], [T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC], true)))
+            {
+                break;
+            }
+        }
+
+        if ($memberKind === 'METHOD')
+        {
+            for ($nameIndex = $index + 1; isset($tokens[$nameIndex]); $nameIndex++)
+            {
+                if (is_array($tokens[$nameIndex]) && $tokens[$nameIndex][0] === T_STRING)
+                {
+                    if ($tokens[$nameIndex][1] === '__construct')
+                    {
+                        $memberKind = 'CONSTRUCTOR';
+                    }
+
+                    break;
+                }
+
+                if (($tokens[$nameIndex] ?? null) === '(')
+                {
+                    break;
+                }
+            }
+        }
+
+        while ($memberStart > $classOpening + 1)
+        {
+            $previous = $tokens[$memberStart - 1];
+            $previousText = is_array($previous) ? $previous[1] : $previous;
+
+            if (in_array($previousText, ['{', '}', ';'], true))
+            {
+                break;
+            }
+
+            $memberStart--;
+        }
+    }
+
+    if ($members === [])
+    {
+        continue;
+    }
+
+    $originalMembers = $members;
+    $cursor = $bodyStart;
+
+    foreach ($originalMembers as $member)
+    {
+        if (trim(substr($contents, $cursor, $member['start'] - $cursor)) !== '')
+        {
+            $members = [];
+
+            break;
+        }
+
+        $cursor = $member['end'];
+    }
+
+    if ($members === [] || trim(substr($contents, $cursor, $bodyEnd - $cursor)) !== '')
+    {
+        continue;
+    }
+
+    usort($members, static function (array $first, array $second) use ($regionNames): int
+    {
+        return $regionNames[$first['region']] <=> $regionNames[$second['region']];
+    });
+
+    $memberContents = [];
+
+    foreach ($members as $member)
+    {
+        $memberContents[$member['region']][] = trim(substr($contents, $member['start'], $member['end'] - $member['start']));
+    }
+
+    $lineStart = strrpos(substr($contents, 0, $offsets[$classOpening]), PHP_EOL);
+    $classIndent = $lineStart === false ? '' : preg_replace('/\S.*/', '', substr($contents, $lineStart + strlen(PHP_EOL), $offsets[$classOpening] - $lineStart - strlen(PHP_EOL))) ?? '';
+    $memberIndent = $classIndent . '    ';
+    $replacement = '';
+
+    foreach ($regionNames as $name => $unused)
+    {
+        if (!isset($memberContents[$name]))
+        {
+            continue;
+        }
+
+        $replacement .= PHP_EOL . $memberIndent . '#region ' . $name . PHP_EOL . PHP_EOL;
+        $replacement .= implode(PHP_EOL . PHP_EOL, array_map(static function (string $member) use ($memberIndent): string
+        {
+            return $memberIndent . $member;
+        }, $memberContents[$name]));
+        $replacement .= PHP_EOL . PHP_EOL . $memberIndent . '#endregion' . PHP_EOL;
+    }
+
+    $replacement .= $classIndent;
+    $replacement = preg_replace('/^' . preg_quote($memberIndent . $memberIndent, '/') . '(\/\*\*)/m', $memberIndent . '$1', $replacement) ?? $replacement;
+    $updated = substr_replace($contents, $replacement, $bodyStart, $bodyEnd - $bodyStart);
+
+    file_put_contents($file, $updated);
+    $syntaxOutput = [];
+    $syntaxStatus = 0;
+    exec('php -l ' . escapeshellarg($file) . ' 2>&1', $syntaxOutput, $syntaxStatus);
+
+    if ($syntaxStatus !== 0)
+    {
+        file_put_contents($file, $originalContents);
+    }
+}

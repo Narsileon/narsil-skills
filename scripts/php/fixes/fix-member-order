@@ -41,141 +41,15 @@ foreach (array_slice($argv, 1) as $path)
     }
 }
 
-$regionNames = [];
-
-foreach (RegionEnum::cases() as $region)
-{
-    if ($region->isMember())
-    {
-        $regionNames[$region->value] = $region->sortOrder();
-    }
-}
-
-asort($regionNames, SORT_NUMERIC);
-
-$memberRegionPattern = RegionEnum::memberPattern();
-$reorderRegions = static function (string $contents) use ($regionNames, $memberRegionPattern): string
-{
-    $lines = preg_split('/\R/', rtrim($contents, "\r\n"));
-    $blocks = [];
-    $lineCount = count($lines);
-
-    for ($lineIndex = 0; $lineIndex < $lineCount; $lineIndex++)
-    {
-        if (preg_match('/^(\s*)#region\s+(' . $memberRegionPattern . ')\s*$/', $lines[$lineIndex], $matches) !== 1 || strlen($matches[1]) === 0)
-        {
-            continue;
-        }
-
-        $depth = 1;
-
-        for ($endIndex = $lineIndex + 1; $endIndex < $lineCount; $endIndex++)
-        {
-            if (preg_match('/^\s*#region\s+/', $lines[$endIndex]) === 1)
-            {
-                $depth++;
-            }
-
-            if (preg_match('/^\s*#endregion\s*$/', $lines[$endIndex]) === 1)
-            {
-                $depth--;
-            }
-
-            if ($depth === 0)
-            {
-                $blocks[] = [
-                    'end' => $endIndex,
-                    'name' => $matches[2],
-                    'start' => $lineIndex,
-                ];
-
-                $lineIndex = $endIndex;
-
-                break;
-            }
-        }
-    }
-
-    if (count($blocks) < 2)
-    {
-        return $contents;
-    }
-
-    $firstBlock = $blocks[0];
-    $lastBlock = $blocks[count($blocks) - 1];
-
-    for ($blockIndex = 1; $blockIndex < count($blocks); $blockIndex++)
-    {
-        $gap = array_slice($lines, $blocks[$blockIndex - 1]['end'] + 1, $blocks[$blockIndex]['start'] - $blocks[$blockIndex - 1]['end'] - 1);
-
-        if (array_filter($gap, static function (string $line): bool
-        {
-            return trim($line) !== '';
-        }) !== [])
-        {
-            return $contents;
-        }
-    }
-
-    $sortedBlocks = $blocks;
-    usort($sortedBlocks, static function (array $first, array $second) use ($regionNames): int
-    {
-        return $regionNames[$first['name']] <=> $regionNames[$second['name']];
-    });
-
-    if (array_column($blocks, 'name') === array_column($sortedBlocks, 'name'))
-    {
-        return $contents;
-    }
-
-    $replacement = [];
-
-    foreach ($sortedBlocks as $block)
-    {
-        $replacement = array_merge($replacement, array_slice($lines, $block['start'], $block['end'] - $block['start'] + 1), ['']);
-    }
-
-    array_pop($replacement);
-    array_splice($lines, $firstBlock['start'], $lastBlock['end'] - $firstBlock['start'] + 1, $replacement);
-
-    return implode(PHP_EOL, $lines) . PHP_EOL;
-};
+$sortableRegions = [
+    RegionEnum::CONSTANTS->value,
+    RegionEnum::PROPERTIES->value,
+];
 
 foreach (array_values(array_unique($files)) as $file)
 {
     $contents = (string)file_get_contents($file);
     $originalContents = $contents;
-
-    if (preg_match('/^\s*#region USE\s*$/m', $contents) !== 1 && preg_match('/^\s*use\s+[^({;]+;\s*$/m', $contents) === 1)
-    {
-        $lines = preg_split('/\R/', rtrim($contents, "\r\n"));
-        $importIndexes = [];
-
-        foreach ($lines as $lineIndex => $line)
-        {
-            if (preg_match('/^\s*use\s+[^({;]+;\s*$/', $line) === 1)
-            {
-                $importIndexes[] = $lineIndex;
-            }
-        }
-
-        if ($importIndexes !== [])
-        {
-            $firstImport = $importIndexes[0];
-            $lastImport = $importIndexes[count($importIndexes) - 1];
-            array_splice($lines, $lastImport + 1, 0, ['', '#endregion']);
-            array_splice($lines, $firstImport, 0, ['#region USE', '']);
-            $contents = implode(PHP_EOL, $lines) . PHP_EOL;
-        }
-    }
-
-    $contents = $reorderRegions($contents);
-
-    if ($contents !== $originalContents)
-    {
-        file_put_contents($file, $contents);
-    }
-
     $tokens = token_get_all($contents);
     $offsets = [];
     $offset = 0;
@@ -186,9 +60,9 @@ foreach (array_values(array_unique($files)) as $file)
         $offset += strlen(is_array($token) ? $token[1] : $token);
     }
 
-    $declarations = [];
     $braceDepth = 0;
     $classDepth = null;
+    $classBodyDepth = null;
     $classOpening = null;
     $classClosing = null;
     $classCount = 0;
@@ -199,12 +73,12 @@ foreach (array_values(array_unique($files)) as $file)
         $id = is_array($token) ? $token[0] : null;
         $text = is_array($token) ? $token[1] : $token;
 
-        if (in_array($id, [T_CLASS, T_INTERFACE, T_TRAIT], true))
+        if (in_array($id, [T_CLASS, T_ENUM, T_INTERFACE, T_TRAIT], true))
         {
             $classCount++;
             $next = $index + 1;
 
-            while (isset($tokens[$next]) && is_array($tokens[$next]) && $tokens[$next][0] !== T_STRING)
+            while ($next < $tokenCount && is_array($tokens[$next]) && $tokens[$next][0] !== T_STRING)
             {
                 $next++;
             }
@@ -219,6 +93,7 @@ foreach (array_values(array_unique($files)) as $file)
                 if (($tokens[$opening] ?? null) === '{')
                 {
                     $classDepth = $braceDepth + 1;
+                    $classBodyDepth = $classDepth;
                     $classOpening = $opening;
 
                     break;
@@ -251,22 +126,10 @@ foreach (array_values(array_unique($files)) as $file)
         continue;
     }
 
-    $bodyStart = $offsets[$classOpening] + 1;
-    $bodyEnd = $offsets[$classClosing];
-    $body = substr($contents, $bodyStart, $bodyEnd - $bodyStart);
-
-    if (preg_match('/^\s*#region\s+/', $body, $matches) === 1 && preg_match('/#region\s+/', $body) === 1)
-    {
-        continue;
-    }
-
     $braceDepth = 0;
-    $members = [];
-    $memberStart = null;
-    $memberKind = null;
-    $memberVisibility = RegionEnum::PUBLIC_METHODS->value;
-    $memberEnd = null;
+    $region = null;
     $inClass = false;
+    $membersByRegion = [];
 
     foreach ($tokens as $index => $token)
     {
@@ -278,9 +141,16 @@ foreach (array_values(array_unique($files)) as $file)
             $inClass = true;
         }
 
-        if (!$inClass)
+        if ($inClass && $id === T_COMMENT)
         {
-            continue;
+            if (preg_match('/^#region\s+(.+)$/', trim($text), $matches) === 1)
+            {
+                $region = trim($matches[1]);
+            }
+            elseif (trim($text) === '#endregion')
+            {
+                $region = null;
+            }
         }
 
         if ($text === '{')
@@ -293,176 +163,139 @@ foreach (array_values(array_unique($files)) as $file)
             $braceDepth--;
         }
 
-        if ($braceDepth !== 1 || $index <= $classOpening || $index >= $classClosing)
+        if (!$inClass || $braceDepth !== $classBodyDepth || !in_array($region, $sortableRegions, true) || !in_array($id, [T_CONST, T_VARIABLE], true))
         {
             continue;
         }
 
-        if ($memberStart !== null)
+        $startToken = $index;
+
+        for ($startIndex = $index - 1; $startIndex > $classOpening; $startIndex--)
         {
-            if (in_array($memberKind, ['CONSTRUCTOR', 'METHOD'], true) && $memberEnd === null && $text === '}')
-            {
-                $memberEnd = $index;
-            }
-
-            if ($memberKind !== 'METHOD' && $text === ';')
-            {
-                $memberEnd = $index;
-            }
-
-            if ($memberEnd !== null)
-            {
-                $members[] = [
-                    'end' => $offsets[$memberEnd] + strlen(is_array($tokens[$memberEnd]) ? $tokens[$memberEnd][1] : $tokens[$memberEnd]),
-                    'region' => match ($memberKind)
-                    {
-                        'CONSTANT' => RegionEnum::CONSTANTS->value,
-                        'PROPERTY' => RegionEnum::PROPERTIES->value,
-                        'CONSTRUCTOR' => RegionEnum::CONSTRUCTOR->value,
-                        default => $memberVisibility,
-                    },
-                    'start' => $offsets[$memberStart],
-                ];
-                $memberStart = null;
-                $memberKind = null;
-                $memberEnd = null;
-            }
-
-            continue;
-        }
-
-        if (!in_array($id, [T_FUNCTION, T_CONST, T_VARIABLE], true))
-        {
-            continue;
-        }
-
-        $memberStart = $index;
-        $memberKind = $id === T_CONST ? 'CONSTANT' : ($id === T_VARIABLE ? 'PROPERTY' : 'METHOD');
-        $memberVisibility = RegionEnum::PUBLIC_METHODS->value;
-
-        for ($modifierIndex = $index - 1; $modifierIndex >= 0; $modifierIndex--)
-        {
-            $modifier = $tokens[$modifierIndex];
-
-            if (is_array($modifier) && $modifier[0] === T_PRIVATE)
-            {
-                $memberVisibility = RegionEnum::PRIVATE_METHODS->value;
-            }
-
-            if (is_array($modifier) && $modifier[0] === T_PROTECTED)
-            {
-                $memberVisibility = RegionEnum::PROTECTED_METHODS->value;
-            }
-
-            if (!is_array($modifier) || ($modifier[0] !== T_WHITESPACE && !in_array($modifier[0], [T_ABSTRACT, T_FINAL, T_PRIVATE, T_PROTECTED, T_PUBLIC, T_READONLY, T_STATIC], true)))
-            {
-                break;
-            }
-        }
-
-        if ($memberKind === 'METHOD')
-        {
-            for ($nameIndex = $index + 1; isset($tokens[$nameIndex]); $nameIndex++)
-            {
-                if (is_array($tokens[$nameIndex]) && $tokens[$nameIndex][0] === T_STRING)
-                {
-                    if ($tokens[$nameIndex][1] === '__construct')
-                    {
-                        $memberKind = 'CONSTRUCTOR';
-                    }
-
-                    break;
-                }
-
-                if (($tokens[$nameIndex] ?? null) === '(')
-                {
-                    break;
-                }
-            }
-        }
-
-        while ($memberStart > $classOpening + 1)
-        {
-            $previous = $tokens[$memberStart - 1];
+            $previous = $tokens[$startIndex];
+            $previousId = is_array($previous) ? $previous[0] : null;
             $previousText = is_array($previous) ? $previous[1] : $previous;
 
-            if (in_array($previousText, ['{', '}', ';'], true))
+            if ($previousId === T_DOC_COMMENT)
+            {
+                $startToken = $startIndex;
+
+                break;
+            }
+
+            if (in_array($previousText, [';', '{', '}'], true) || ($previousId === T_COMMENT && in_array(trim($previousText), ['#region ' . $region, '#endregion'], true)))
             {
                 break;
             }
 
-            $memberStart--;
+            if ($previousId !== T_WHITESPACE)
+            {
+                $startToken = $startIndex;
+            }
         }
-    }
 
-    if ($members === [])
-    {
-        continue;
-    }
+        $name = $id === T_VARIABLE ? $token[1] : '';
 
-    $originalMembers = $members;
-    $cursor = $bodyStart;
-
-    foreach ($originalMembers as $member)
-    {
-        if (trim(substr($contents, $cursor, $member['start'] - $cursor)) !== '')
+        for ($lookAhead = $index + 1; $lookAhead < $tokenCount && $id === T_CONST; $lookAhead++)
         {
-            $members = [];
+            $lookAheadToken = $tokens[$lookAhead];
+            $lookAheadId = is_array($lookAheadToken) ? $lookAheadToken[0] : null;
 
-            break;
+            if (($id === T_CONST && $lookAheadId === T_STRING) || ($id === T_VARIABLE && $lookAheadId === T_VARIABLE))
+            {
+                $name = $lookAheadToken[1];
+
+                break;
+            }
         }
 
-        $cursor = $member['end'];
-    }
+        $endToken = null;
 
-    if ($members === [] || trim(substr($contents, $cursor, $bodyEnd - $cursor)) !== '')
-    {
-        continue;
-    }
+        for ($lookAhead = $index + 1; $lookAhead < $tokenCount; $lookAhead++)
+        {
+            $lookAheadToken = $tokens[$lookAhead];
+            $lookAheadText = is_array($lookAheadToken) ? $lookAheadToken[1] : $lookAheadToken;
 
-    usort($members, static function (array $first, array $second) use ($regionNames): int
-    {
-        return $regionNames[$first['region']] <=> $regionNames[$second['region']];
-    });
+            if ($lookAheadText === ';')
+            {
+                $endToken = $lookAhead;
 
-    $memberContents = [];
+                break;
+            }
+        }
 
-    foreach ($members as $member)
-    {
-        $memberContents[$member['region']][] = trim(substr($contents, $member['start'], $member['end'] - $member['start']));
-    }
-
-    $lineStart = strrpos(substr($contents, 0, $offsets[$classOpening]), PHP_EOL);
-    $classIndent = $lineStart === false ? '' : preg_replace('/\S.*/', '', substr($contents, $lineStart + strlen(PHP_EOL), $offsets[$classOpening] - $lineStart - strlen(PHP_EOL))) ?? '';
-    $memberIndent = $classIndent . '    ';
-    $replacement = '';
-
-    foreach ($regionNames as $name => $unused)
-    {
-        if (!isset($memberContents[$name]))
+        if ($name === '' || $endToken === null)
         {
             continue;
         }
 
-        $replacement .= PHP_EOL . $memberIndent . '#region ' . $name . PHP_EOL . PHP_EOL;
-        $replacement .= implode(PHP_EOL . PHP_EOL, array_map(static function (string $member) use ($memberIndent): string
-        {
-            return $memberIndent . $member;
-        }, $memberContents[$name]));
-        $replacement .= PHP_EOL . PHP_EOL . $memberIndent . '#endregion' . PHP_EOL;
+        $membersByRegion[$region][] = [
+            'end' => $offsets[$endToken] + strlen(is_array($tokens[$endToken]) ? $tokens[$endToken][1] : $tokens[$endToken]),
+            'name' => ltrim($name, '$'),
+            'start' => $offsets[$startToken],
+        ];
     }
 
-    $replacement .= $classIndent;
-    $replacement = preg_replace('/^' . preg_quote($memberIndent . $memberIndent, '/') . '(\/\*\*)/m', $memberIndent . '$1', $replacement) ?? $replacement;
-    $updated = substr_replace($contents, $replacement, $bodyStart, $bodyEnd - $bodyStart);
+    $replacements = [];
 
-    file_put_contents($file, $updated);
-    $syntaxOutput = [];
-    $syntaxStatus = 0;
-    exec('php -l ' . escapeshellarg($file) . ' 2>&1', $syntaxOutput, $syntaxStatus);
-
-    if ($syntaxStatus !== 0)
+    foreach ($membersByRegion as $members)
     {
-        file_put_contents($file, $originalContents);
+        if (count($members) < 2)
+        {
+            continue;
+        }
+
+        for ($memberIndex = 1; $memberIndex < count($members); $memberIndex++)
+        {
+            if (trim(substr($contents, $members[$memberIndex - 1]['end'], $members[$memberIndex]['start'] - $members[$memberIndex - 1]['end'])) !== '')
+            {
+                continue 2;
+            }
+        }
+
+        $sortedMembers = $members;
+        usort($sortedMembers, static function (array $first, array $second): int
+        {
+            return strcasecmp($first['name'], $second['name']);
+        });
+
+        if (array_column($members, 'name') === array_column($sortedMembers, 'name'))
+        {
+            continue;
+        }
+
+        $lineStart = strrpos(substr($contents, 0, $members[0]['start']), PHP_EOL);
+        $lineStart = $lineStart === false ? 0 : $lineStart + strlen(PHP_EOL);
+        $indent = preg_replace('/\S.*/', '', substr($contents, $lineStart, $members[0]['start'] - $lineStart)) ?? '';
+        $chunks = [];
+
+        foreach ($sortedMembers as $member)
+        {
+            $chunks[] = $indent . trim(substr($contents, $member['start'], $member['end'] - $member['start']));
+        }
+
+        $replacements[] = [
+            'end' => $members[count($members) - 1]['end'],
+            'start' => $lineStart,
+            'value' => implode(PHP_EOL . PHP_EOL, $chunks),
+        ];
+    }
+
+    foreach (array_reverse($replacements) as $replacement)
+    {
+        $contents = substr_replace($contents, $replacement['value'], $replacement['start'], $replacement['end'] - $replacement['start']);
+    }
+
+    if ($replacements !== [])
+    {
+        file_put_contents($file, $contents);
+        $syntaxOutput = [];
+        $syntaxStatus = 0;
+        exec('php -l ' . escapeshellarg($file) . ' 2>&1', $syntaxOutput, $syntaxStatus);
+
+        if ($syntaxStatus !== 0)
+        {
+            file_put_contents($file, $originalContents);
+        }
     }
 }
