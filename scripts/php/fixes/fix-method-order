@@ -239,6 +239,8 @@ foreach (array_values(array_unique($files)) as $file)
         $lineStart = $lineStart === false ? 0 : $lineStart + strlen(PHP_EOL);
         $indent = substr($contents, $lineStart, $firstMethodStart - $lineStart);
         $indent = preg_replace('/\S.*/', '', $indent) ?? '';
+        $replacementStart = strrpos(substr($contents, 0, $methods[0]['start']), PHP_EOL);
+        $replacementStart = $replacementStart === false ? 0 : $replacementStart + strlen(PHP_EOL);
         $chunks = [];
 
         foreach ($sortedMethods as $method)
@@ -248,7 +250,7 @@ foreach (array_values(array_unique($files)) as $file)
 
         $replacements[] = [
             'end' => $methods[count($methods) - 1]['end'],
-            'start' => $methods[0]['start'],
+            'start' => $replacementStart,
             'value' => implode(PHP_EOL . PHP_EOL, $chunks),
         ];
     }

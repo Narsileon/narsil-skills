@@ -49,7 +49,7 @@ enum RegionEnum: string
 
     #region PUBLIC METHODS
 
-        /**
+    /**
      * @return string
      */
     public static function memberPattern(): string
