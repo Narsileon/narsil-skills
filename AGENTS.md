@@ -4,6 +4,7 @@
 |------|------|
 | `skills/general/` | General — [SKILL.md](skills/general/SKILL.md) (bug fixes, comments) |
 | `skills/blade/` | Blade — [SKILL.md](skills/blade/SKILL.md) + [templates/](skills/blade/templates/) (imports [php](skills/php/SKILL.md), [html](skills/html/SKILL.md), [tailwind](skills/tailwind/SKILL.md)) |
+| `skills/docs/` | Documentation — [SKILL.md](skills/docs/SKILL.md) |
 | `skills/eslint/` | ESLint — [SKILL.md](skills/eslint/SKILL.md) |
 | `skills/html/` | HTML — [SKILL.md](skills/html/SKILL.md) |
 | `skills/laravel/` | Laravel — [SKILL.md](skills/laravel/SKILL.md) + [templates/](skills/laravel/templates/) (imports [php](skills/php/SKILL.md)) |
@@ -18,6 +19,7 @@
 | `vendor/narsil/skills/skills/` | Agent skills + templates (exception to vendor skip) |
 
 General: follow the [general](vendor/narsil/skills/skills/general/SKILL.md) skill.
+Documentation: follow the [docs](vendor/narsil/skills/skills/docs/SKILL.md) skill.
 Blade: follow the [blade](vendor/narsil/skills/skills/blade/SKILL.md) skill.
 ESLint: follow the [eslint](vendor/narsil/skills/skills/eslint/SKILL.md) skill.
 HTML: follow the [html](vendor/narsil/skills/skills/html/SKILL.md) skill.
