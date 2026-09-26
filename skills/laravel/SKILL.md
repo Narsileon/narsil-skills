@@ -53,4 +53,4 @@ Blade views (`resources/views/` — `components/ui`, `components/icons`, blocks,
 
 ## Formatting
 
-Use the shared [Pint configuration](../../docs/pint.md) from Narsil Skills. Pint handles formatting; the PHP skill scripts validate and repair Narsil-specific regions, PHPDoc, and member ordering.
+Use the shared [Pint configuration](../../docs/commands/pint.md) from Narsil Skills. Pint handles formatting; the PHP skill scripts validate and repair Narsil-specific regions, PHPDoc, and member ordering.

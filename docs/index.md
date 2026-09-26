@@ -4,6 +4,5 @@ Documentation for Narsil Skills.
 
 ## Repository
 
-- [Commands](commands.md)
-- [Pint](pint.md)
+- [Commands](commands/index.md)
 - [Structure](structure.md)

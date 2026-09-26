@@ -3,6 +3,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/status.php';
+
 $scriptDirectory = __DIR__;
 $paths = array_slice($argv, 1);
 
@@ -27,6 +29,8 @@ foreach ($fixers as $fixer)
 {
     passthru(escapeshellarg($scriptDirectory . '/fixes/' . $fixer) . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
 
+    printStatusBadge(passed: $status === 0, label: $fixer);
+
     if ($status !== 0)
     {
         exit($status);
@@ -41,11 +45,20 @@ if ($paths !== [])
     if (!is_file($pintPath) || !is_file($pintConfig))
     {
         fwrite(STDERR, "Pint could not be found with the shared configuration.\n");
+        printStatusBadge(passed: false, label: 'Pint', toStandardError: true);
 
         exit(1);
     }
 
-    passthru(escapeshellarg($pintPath) . ' --config=' . escapeshellarg($pintConfig) . ' ' . implode(' ', array_map('escapeshellarg', $paths)), $status);
+    $ansiOption = '';
+
+    if (stream_isatty(STDOUT) && getenv('NO_COLOR') === false && getenv('TERM') !== 'dumb')
+    {
+        $ansiOption = '--ansi ';
+    }
+
+    passthru(escapeshellarg($pintPath) . ' ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . implode(' ', array_map('escapeshellarg', $paths)), $status);
+    printStatusBadge(passed: $status === 0, label: 'Pint');
 }
 
 exit($status);

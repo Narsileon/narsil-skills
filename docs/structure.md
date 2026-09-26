@@ -5,6 +5,12 @@ Narsil Skills provides reusable agent guidance and PHP tooling for Narsil projec
 ```text
 .  # Narsil Skills root
 ├── docs/  # Documentation
+│   ├── commands/  # Command documentation
+│   │   ├── index.md  # Command index
+│   │   ├── php.md  # PHP check and fix commands
+│   │   └── pint.md  # PHP formatting commands
+│   ├── index.md  # Documentation index
+│   └── structure.md  # Root structure reference
 ├── scripts/  # Development scripts
 │   └── php/  # PHP tooling
 │       ├── checks/  # PHP code checks

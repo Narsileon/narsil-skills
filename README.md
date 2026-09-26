@@ -36,4 +36,4 @@ Local development (path repo):
 }
 ```
 
-For PHP checks and fixers, see the [Commands guide](docs/commands.md).
+For PHP checks and fixers, see the [Commands guide](docs/commands/index.md).

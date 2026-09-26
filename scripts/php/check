@@ -4,12 +4,16 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../src/Enums/CheckEnum.php';
+require_once __DIR__ . '/status.php';
+
+#region USE
 
 use Narsil\Skills\Enums\CheckEnum;
 
+#endregion
+
 $scriptDirectory = __DIR__;
 $paths = array_slice($argv, 1);
-$successes = 0;
 $failures = 0;
 $phpFiles = [];
 
@@ -111,23 +115,27 @@ if ($phpFiles !== [])
     if (!is_file($pintPath) || !is_file($pintConfig))
     {
         printf("FAIL Pint: vendor/bin/pint or the shared Pint configuration was not found.\n");
+        printStatusBadge(passed: false, label: 'Pint');
 
         $failures++;
     }
     else
     {
         $arguments = implode(' ', array_map('escapeshellarg', $phpFiles));
+        $ansiOption = '';
         $pintStatus = 0;
 
-        passthru(escapeshellarg($pintPath) . ' --test --config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $pintStatus);
-
-        if ($pintStatus === 0)
+        if (stream_isatty(STDOUT) && getenv('NO_COLOR') === false && getenv('TERM') !== 'dumb')
         {
-            $successes++;
+            $ansiOption = '--ansi ';
         }
-        else
+
+        passthru(escapeshellarg($pintPath) . ' --quiet --test ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $pintStatus);
+
+        if ($pintStatus !== 0)
         {
             $failures++;
+            printStatusBadge(passed: false, label: 'Pint');
         }
     }
 }
@@ -143,13 +151,10 @@ foreach (CheckEnum::cases() as $check)
     $status = 0;
     passthru(escapeshellarg($scriptDirectory . '/checks/' . $check->value) . ' ' . $arguments, $status);
 
-    if ($status === 0)
-    {
-        $successes++;
-    }
-    else
+    if ($status !== 0)
     {
         $failures++;
+        printStatusBadge(passed: false, label: $check->value);
     }
 }
 
@@ -157,15 +162,10 @@ $composerStatus = 0;
 
 passthru(escapeshellarg($scriptDirectory . '/checks/check-composer'), $composerStatus);
 
-if ($composerStatus === 0)
-{
-    $successes++;
-}
-else
+if ($composerStatus !== 0)
 {
     $failures++;
+    printStatusBadge(passed: false, label: 'check-composer');
 }
-
-printf("\nSuccess: %d\nFailed: %d\n", $successes, $failures);
 
 exit($failures > 0 ? 1 : 0);
