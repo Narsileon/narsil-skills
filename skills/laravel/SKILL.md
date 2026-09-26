@@ -51,6 +51,6 @@ Blade views (`resources/views/` — `components/ui`, `components/icons`, blocks,
 - `down()` before `up()`; `down()` drops `Model::TABLE`; `up()` guards `hasTable`, delegates to private `create*Table()`.
 - One column per `$blueprint` line; `{` on its own line; FKs via column + `User::TABLE` constants.
 
-## Agents
+## Formatting
 
-**Do not run Laravel Pint** on skill-styled PHP (`app/Helpers/`, `app/View/Components/`, etc.) — it rewrites `#region`, strips private PHPDoc, and changes braces. If Pint already ran, restore from the stub.
+Use the shared [Pint configuration](../../docs/pint.md) from Narsil Skills. Pint handles formatting; the PHP skill scripts validate and repair Narsil-specific regions, PHPDoc, and member ordering.

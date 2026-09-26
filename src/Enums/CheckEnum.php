@@ -36,10 +36,5 @@ enum CheckEnum: string
      * @var string
      */
     case STYLE = 'check-style';
-    /**
-     * @var string
-     */
-    case SYNTAX = 'check-syntax';
-
     #endregion
 }

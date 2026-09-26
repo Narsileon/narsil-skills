@@ -103,6 +103,35 @@ if ($paths === [])
 
 $phpFiles = array_values(array_unique($phpFiles));
 
+if ($phpFiles !== [])
+{
+    $pintPath = getcwd() . '/vendor/bin/pint';
+    $pintConfig = dirname(__DIR__, 2) . '/pint.json';
+
+    if (!is_file($pintPath) || !is_file($pintConfig))
+    {
+        printf("FAIL Pint: vendor/bin/pint or the shared Pint configuration was not found.\n");
+
+        $failures++;
+    }
+    else
+    {
+        $arguments = implode(' ', array_map('escapeshellarg', $phpFiles));
+        $pintStatus = 0;
+
+        passthru(escapeshellarg($pintPath) . ' --test --config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $pintStatus);
+
+        if ($pintStatus === 0)
+        {
+            $successes++;
+        }
+        else
+        {
+            $failures++;
+        }
+    }
+}
+
 foreach (CheckEnum::cases() as $check)
 {
     if ($phpFiles === [])

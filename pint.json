@@ -1,0 +1,72 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "braces_position": {
+            "anonymous_classes_opening_brace": "next_line_unless_newline_at_signature_end",
+            "anonymous_functions_opening_brace": "next_line_unless_newline_at_signature_end",
+            "classes_opening_brace": "next_line_unless_newline_at_signature_end",
+            "control_structures_opening_brace": "next_line_unless_newline_at_signature_end",
+            "functions_opening_brace": "next_line_unless_newline_at_signature_end"
+        },
+        "control_structure_continuation_position": {
+            "position": "next_line"
+        },
+        "concat_space": {
+            "spacing": "one"
+        },
+        "declare_strict_types": true,
+        "phpdoc_align": {
+            "align": "left",
+            "spacing": {
+                "param": 1
+            }
+        },
+        "phpdoc_separation": {
+            "groups": [
+                [
+                    "deprecated",
+                    "link",
+                    "see",
+                    "since"
+                ],
+                [
+                    "author",
+                    "copyright",
+                    "license"
+                ],
+                [
+                    "category",
+                    "package",
+                    "subpackage"
+                ],
+                [
+                    "property",
+                    "property-read",
+                    "property-write"
+                ],
+                [
+                    "param"
+                ],
+                [
+                    "return"
+                ]
+            ]
+        },
+        "not_operator_with_successor_space": false,
+        "new_with_parentheses": {
+            "anonymous_class": true,
+            "named_class": true
+        },
+        "no_superfluous_phpdoc_tags": false,
+        "phpdoc_array_type": false,
+        "phpdoc_list_type": false,
+        "phpdoc_no_empty_return": false,
+        "phpdoc_scalar": false,
+        "single_line_comment_spacing": false,
+        "single_line_comment_style": {
+            "comment_types": [
+                "asterisk"
+            ]
+        }
+    }
+}

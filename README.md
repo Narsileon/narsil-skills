@@ -1,6 +1,6 @@
 # Agent skills
 
-Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for documentation, Blade, ESLint, HTML, Laravel, PHP, React, Tailwind, and TYPO3. Skill index and consumer wiring: [AGENTS.md](AGENTS.md).
+Portable [Cursor Agent Skills](https://cursor.com/docs/agent/skills) for documentation, Blade, ESLint, HTML, Laravel, PHP, React, Tailwind, and TYPO3. See the [documentation index](docs/index.md) for the repository structure and [AGENTS.md](AGENTS.md) for skill wiring.
 
 ## Install (Composer)
 
@@ -36,52 +36,4 @@ Local development (path repo):
 }
 ```
 
-```bash
-composer update narsil/skills
-```
-
-## PHP checks
-
-Run the executable checker from a consumer project after creating or editing PHP:
-
-```bash
-vendor/narsil/skills/scripts/php/check
-vendor/narsil/skills/scripts/php/check app/Domain/Model
-```
-
-It runs separate syntax, PHPDoc, style, region-order, and Composer checks. Passing checks are silent; failures include source lines and the command ends with success/failure totals.
-
-Region checks can also be run independently:
-
-```bash
-vendor/narsil/skills/scripts/php/checks/check-region-order
-vendor/narsil/skills/scripts/php/checks/check-region-hierarchy
-vendor/narsil/skills/scripts/php/checks/check-method-order
-vendor/narsil/skills/scripts/php/checks/check-enum-regions
-```
-
-The fixer pipeline runs `fix-empty-lines`, PHPDoc normalization, region normalization, member ordering, region normalization again, and method ordering. `fix-regions` owns `USE` and member-region creation, repair, and ordering. `fix-member-order` sorts non-method members inside existing regions, while `fix-method-order` sorts methods inside method regions. `fix-region-hierarchy` only repairs nesting and missing region closures.
-
-## Deployment / CI
-
-`narsil/skills` is **require-dev only** — production and deploy pipelines must use:
-
-```bash
-composer install --no-dev --optimize-autoloader
-```
-
-Deploy servers do not need repository access to `narsil/skills`. Local dev: `composer install` (with dev dependencies).
-
-## Install globally (optional)
-
-```bash
-cp -R vendor/narsil/skills/skills/blade ~/.cursor/skills/blade
-cp -R vendor/narsil/skills/skills/docs ~/.cursor/skills/docs
-cp -R vendor/narsil/skills/skills/eslint ~/.cursor/skills/eslint
-cp -R vendor/narsil/skills/skills/general ~/.cursor/skills/general
-cp -R vendor/narsil/skills/skills/laravel ~/.cursor/skills/laravel
-cp -R vendor/narsil/skills/skills/php ~/.cursor/skills/php
-cp -R vendor/narsil/skills/skills/react ~/.cursor/skills/react
-cp -R vendor/narsil/skills/skills/tailwind ~/.cursor/skills/tailwind
-cp -R vendor/narsil/skills/skills/typo3 ~/.cursor/skills/typo3
-```
+For PHP checks and fixers, see the [Commands guide](docs/commands.md).

@@ -17,15 +17,6 @@ foreach (array_slice($argv, 1) as $file)
     $lines = file($file, FILE_IGNORE_NEW_LINES);
     $fileFailures = 0;
 
-    if (($lines[0] ?? '') !== '<?php' || ($lines[1] ?? '') !== '' || ($lines[2] ?? '') !== 'declare(strict_types=1);')
-    {
-        printf("FAIL strict types: %s (expected <?php, a blank line, then declare(strict_types=1);)\n", $file);
-        printf("  %s:1: %s\n", $file, $lines[0] ?? '');
-        printf("  %s:2: %s\n", $file, $lines[1] ?? '');
-        printf("  %s:3: %s\n", $file, $lines[2] ?? '');
-        $fileFailures++;
-    }
-
     foreach ($lines as $lineNumber => $line)
     {
         $displayLine = $lineNumber + 1;
