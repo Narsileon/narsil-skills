@@ -130,7 +130,7 @@ if ($phpFiles !== [])
             $ansiOption = '--ansi ';
         }
 
-        passthru(escapeshellarg($pintPath) . ' --quiet --test ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $pintStatus);
+        passthru(escapeshellarg($pintPath) . ' --test ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $pintStatus);
 
         if ($pintStatus !== 0)
         {
