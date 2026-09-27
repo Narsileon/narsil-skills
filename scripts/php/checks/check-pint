@@ -1,0 +1,37 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../files.php';
+
+$phpFiles = narsilSkillsGetPhpFiles(array_slice($argv, 1));
+
+if ($phpFiles === [])
+{
+    exit(0);
+}
+
+$pintPath = getcwd() . '/vendor/bin/pint';
+$pintConfig = dirname(__DIR__, 3) . '/pint.json';
+
+if (!is_file($pintPath) || !is_file($pintConfig))
+{
+    fwrite(STDERR, "Pint or the shared Pint configuration was not found.\n");
+
+    exit(1);
+}
+
+$arguments = implode(' ', array_map('escapeshellarg', $phpFiles));
+$ansiOption = '';
+
+if (stream_isatty(STDOUT) && getenv('NO_COLOR') === false && getenv('TERM') !== 'dumb')
+{
+    $ansiOption = '--ansi ';
+}
+
+$status = 0;
+
+passthru(escapeshellarg($pintPath) . ' --test ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $status);
+
+exit($status);

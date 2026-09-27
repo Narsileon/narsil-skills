@@ -48,34 +48,15 @@ $phpFiles = narsilSkillsGetPhpFiles($paths);
 
 if ($phpFiles !== [])
 {
-    $pintPath = getcwd() . '/vendor/bin/pint';
-    $pintConfig = dirname(__DIR__, 2) . '/pint.json';
+    $arguments = implode(' ', array_map('escapeshellarg', $phpFiles));
+    $pintStatus = 0;
 
-    if (!is_file($pintPath) || !is_file($pintConfig))
+    passthru(escapeshellarg($scriptDirectory . '/checks/check-pint') . ' ' . $arguments, $pintStatus);
+
+    if ($pintStatus !== 0)
     {
-        printf("FAIL Pint: vendor/bin/pint or the shared Pint configuration was not found.\n");
-        printStatusBadge(passed: false, label: 'Pint');
-
         $failures++;
-    }
-    else
-    {
-        $arguments = implode(' ', array_map('escapeshellarg', $phpFiles));
-        $ansiOption = '';
-        $pintStatus = 0;
-
-        if (stream_isatty(STDOUT) && getenv('NO_COLOR') === false && getenv('TERM') !== 'dumb')
-        {
-            $ansiOption = '--ansi ';
-        }
-
-        passthru(escapeshellarg($pintPath) . ' --test ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $pintStatus);
-
-        if ($pintStatus !== 0)
-        {
-            $failures++;
-            printStatusBadge(passed: false, label: 'Pint');
-        }
+        printStatusBadge(passed: false, label: 'Pint');
     }
 }
 
