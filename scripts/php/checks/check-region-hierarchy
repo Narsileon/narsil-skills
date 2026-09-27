@@ -11,7 +11,7 @@ foreach (narsilSkillsGetPhpFiles(array_slice($argv, 1)) as $file)
 {
     $stack = [];
 
-    foreach (token_get_all((string)file_get_contents($file)) as $token)
+    foreach (token_get_all((string) file_get_contents($file)) as $token)
     {
         if (!is_array($token) || $token[0] !== T_COMMENT)
         {

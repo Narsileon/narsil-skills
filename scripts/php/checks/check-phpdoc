@@ -16,7 +16,7 @@ if (is_file($autoload))
 
 foreach (narsilSkillsGetPhpFiles(array_slice($argv, 1)) as $file)
 {
-    $contents = (string)file_get_contents($file);
+    $contents = (string) file_get_contents($file);
 
     if (preg_match('/(^|[^A-Za-z0-9_])(class|interface|trait|enum)(\s|$)/', $contents) !== 1)
     {

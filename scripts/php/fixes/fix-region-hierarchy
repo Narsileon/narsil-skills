@@ -12,7 +12,7 @@ $files = narsilSkillsGetPhpFiles(array_slice($argv, 1));
 
 foreach ($files as $file)
 {
-    $contents = (string)file_get_contents($file);
+    $contents = (string) file_get_contents($file);
     $lines = preg_split('/\R/', rtrim($contents, "\r\n"));
     $updatedLines = [];
     $stack = [];

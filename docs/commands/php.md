@@ -2,6 +2,8 @@
 
 Check and fix PHP files with the Narsil Skills scripts. Run commands from the project root.
 
+Directory scans skip `.ddev/`, `.git/`, `bootstrap/cache/`, `node_modules/`, `public/build/`, `storage/`, and `vendor/`.
+
 ## Check
 
 Check all PHP files, or pass a PHP file or directory:

@@ -110,7 +110,7 @@ $reorderRegions = static function (string $contents) use ($regionNames, $memberR
     return implode(PHP_EOL, $lines) . PHP_EOL;
 };
 
-$addMissingMethodRegions = static function (string $contents) use ($regionNames): string
+$addMissingMethodRegions = static function (string $contents): string
 {
     $tokens = token_get_all($contents);
     $offsets = [];
@@ -414,7 +414,7 @@ $addMissingMethodRegions = static function (string $contents) use ($regionNames)
 
 foreach ($files as $file)
 {
-    $contents = (string)file_get_contents($file);
+    $contents = (string) file_get_contents($file);
     $originalContents = $contents;
 
     if (preg_match('/^\s*#region USE\s*$/m', $contents) !== 1)

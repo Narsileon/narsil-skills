@@ -12,7 +12,7 @@ $failures = 0;
 
 foreach (narsilSkillsGetPhpFiles(array_slice($argv, 1)) as $file)
 {
-    $tokens = token_get_all((string)file_get_contents($file));
+    $tokens = token_get_all((string) file_get_contents($file));
     $region = '';
     $members = [];
     $braceDepth = 0;

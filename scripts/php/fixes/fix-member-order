@@ -17,7 +17,7 @@ $sortableRegions = [
 
 foreach ($files as $file)
 {
-    $contents = (string)file_get_contents($file);
+    $contents = (string) file_get_contents($file);
     $originalContents = $contents;
     $tokens = token_get_all($contents);
     $offsets = [];

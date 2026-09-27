@@ -14,6 +14,7 @@ Narsil Skills provides reusable agent guidance and PHP tooling for Narsil projec
 ├── scripts/  # Development scripts
 │   └── php/  # PHP tooling
 │       ├── checks/  # PHP code checks
+│       ├── files.php  # Shared PHP file discovery
 │       └── fixes/  # PHP code fixers
 ├── skills/  # Portable agent skills
 │   ├── blade/  # Blade skill

@@ -9,7 +9,7 @@ $failures = 0;
 
 foreach (narsilSkillsGetPhpFiles(array_slice($argv, 1)) as $file)
 {
-    $contents = (string)file_get_contents($file);
+    $contents = (string) file_get_contents($file);
 
     if (preg_match('/(^|[^A-Za-z0-9_])(class|interface|trait|enum)(\s|$)/', $contents) !== 1)
     {
@@ -65,7 +65,7 @@ foreach (narsilSkillsGetPhpFiles(array_slice($argv, 1)) as $file)
 
     if (preg_match('/function\s+__construct\s*\((.*?)\)/s', $contents, $matches, PREG_OFFSET_CAPTURE) === 1 && preg_match('/(^|[^A-Za-z0-9_])(public|protected|private)\s+/', $matches[1][0]) === 1)
     {
-        $constructorLine = substr_count(substr($contents, 0, (int)$matches[0][1]), "\n") + 1;
+        $constructorLine = substr_count(substr($contents, 0, (int) $matches[0][1]), "\n") + 1;
 
         printf("FAIL constructor promotion: %s:%d: constructor parameters use property promotion\n", $file, $constructorLine);
 
