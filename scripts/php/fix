@@ -4,9 +4,12 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/status.php';
+require_once __DIR__ . '/files.php';
 
 $scriptDirectory = __DIR__;
 $paths = array_slice($argv, 1);
+$phpFiles = narsilSkillsGetPhpFiles($paths);
+$arguments = implode(' ', array_map('escapeshellarg', $phpFiles));
 
 if (in_array('--help', $paths, true) || in_array('-h', $paths, true))
 {
@@ -27,7 +30,7 @@ $fixers = [
 
 foreach ($fixers as $fixer)
 {
-    passthru(escapeshellarg($scriptDirectory . '/fixes/' . $fixer) . ($paths === [] ? '' : ' ' . implode(' ', array_map('escapeshellarg', $paths))), $status);
+    passthru(escapeshellarg($scriptDirectory . '/fixes/' . $fixer) . ($arguments === '' ? '' : ' ' . $arguments), $status);
 
     printStatusBadge(passed: $status === 0, label: $fixer);
 
@@ -37,7 +40,7 @@ foreach ($fixers as $fixer)
     }
 }
 
-if ($paths !== [])
+if ($phpFiles !== [])
 {
     $pintPath = getcwd() . '/vendor/bin/pint';
     $pintConfig = dirname(__DIR__, 2) . '/pint.json';
@@ -57,7 +60,7 @@ if ($paths !== [])
         $ansiOption = '--ansi ';
     }
 
-    passthru(escapeshellarg($pintPath) . ' ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . implode(' ', array_map('escapeshellarg', $paths)), $status);
+    passthru(escapeshellarg($pintPath) . ' ' . $ansiOption . '--config=' . escapeshellarg($pintConfig) . ' ' . $arguments, $status);
     printStatusBadge(passed: $status === 0, label: 'Pint');
 }
 

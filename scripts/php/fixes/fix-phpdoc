@@ -3,42 +3,11 @@
 
 declare(strict_types=1);
 
-$paths = array_slice($argv, 1);
-$files = [];
+require_once __DIR__ . '/../files.php';
 
-foreach ($paths as $path)
-{
-    if (is_dir($path))
-    {
-        $excludedDirectories = array_values(array_filter([
-            realpath($path . DIRECTORY_SEPARATOR . 'vendor'),
-            realpath($path . DIRECTORY_SEPARATOR . 'node_modules'),
-        ]));
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+$files = narsilSkillsGetPhpFiles(array_slice($argv, 1));
 
-        foreach ($iterator as $file)
-        {
-            $realPath = realpath($file->getPathname()) ?: $file->getPathname();
-
-            if ($file->isFile() && $file->getExtension() === 'php' && !str_ends_with($realPath, '.blade.php') && !array_filter($excludedDirectories, static function (string $excludedDirectory) use ($realPath): bool
-            {
-                return str_starts_with($realPath, $excludedDirectory . DIRECTORY_SEPARATOR);
-            }))
-            {
-                $files[] = $file->getPathname();
-            }
-        }
-
-        continue;
-    }
-
-    if (is_file($path))
-    {
-        $files[] = $path;
-    }
-}
-
-foreach (array_values(array_unique($files)) as $file)
+foreach ($files as $file)
 {
     $contents = (string) file_get_contents($file);
     $tokens = token_get_all($contents);

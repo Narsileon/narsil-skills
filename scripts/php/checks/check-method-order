@@ -3,13 +3,14 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../files.php';
 require_once __DIR__ . '/../../../src/Enums/RegionEnum.php';
 
 use Narsil\Skills\Enums\RegionEnum;
 
 $failures = 0;
 
-foreach (array_slice($argv, 1) as $file)
+foreach (narsilSkillsGetPhpFiles(array_slice($argv, 1)) as $file)
 {
     $tokens = token_get_all((string)file_get_contents($file));
     $region = '';
