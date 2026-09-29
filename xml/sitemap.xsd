@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    targetNamespace="http://www.sitemaps.org/schemas/sitemap/0.9"
+    elementFormDefault="qualified">
+    <xs:simpleType name="urlType">
+        <xs:restriction base="xs:anyURI">
+            <xs:minLength value="1" />
+            <xs:maxLength value="2048" />
+            <xs:pattern value="https?://.+" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="lastModifiedType">
+        <xs:union memberTypes="xs:date xs:dateTime" />
+    </xs:simpleType>
+
+    <xs:simpleType name="changeFrequencyType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="always" />
+            <xs:enumeration value="hourly" />
+            <xs:enumeration value="daily" />
+            <xs:enumeration value="weekly" />
+            <xs:enumeration value="monthly" />
+            <xs:enumeration value="yearly" />
+            <xs:enumeration value="never" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="priorityType">
+        <xs:restriction base="xs:decimal">
+            <xs:minInclusive value="0.0" />
+            <xs:maxInclusive value="1.0" />
+            <xs:fractionDigits value="1" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="urlset">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="url" minOccurs="1" maxOccurs="50000">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="loc" type="urlType" />
+                            <xs:element name="lastmod" type="lastModifiedType" minOccurs="0" />
+                            <xs:element name="changefreq" type="changeFrequencyType" minOccurs="0" />
+                            <xs:element name="priority" type="priorityType" minOccurs="0" />
+                            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
