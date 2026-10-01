@@ -78,7 +78,7 @@ enum RegionEnum: string
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isMember(): bool
     {
@@ -95,7 +95,7 @@ enum RegionEnum: string
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isMethod(): bool
     {
@@ -117,7 +117,7 @@ enum RegionEnum: string
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function sortOrder(): int
     {

@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 /**
- * @param boolean $passed
+ * @param bool $passed
  * @param string $label
- * @param boolean $toStandardError
+ * @param bool $toStandardError
  *
  * @return void
  */

@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * @param string $path
  *
- * @return boolean
+ * @return bool
  */
 function narsilSkillsIsExcludedPhpPath(string $path): bool
 {
