@@ -13,9 +13,12 @@ Narsil Skills provides reusable agent guidance and PHP tooling for Narsil projec
 │   └── structure.md  # Root structure reference
 ├── scripts/  # Development scripts
 │   └── php/  # PHP tooling
+│       ├── check  # Run PHP checks
 │       ├── checks/  # PHP code checks
 │       ├── files.php  # Shared PHP file discovery
-│       └── fixes/  # PHP code fixers
+│       ├── fix  # Run PHP fixers
+│       ├── fixes/  # PHP code fixers
+│       └── status.php  # PHP tooling status
 ├── skills/  # Portable agent skills
 │   ├── blade/  # Blade skill
 │   │   └── templates/  # Blade templates
@@ -33,6 +36,8 @@ Narsil Skills provides reusable agent guidance and PHP tooling for Narsil projec
 │   └── typo3/  # TYPO3 skill
 │       └── extbase/  # TYPO3 Extbase skill
 │           └── templates/  # Extbase templates
-└── src/  # PHP source
-    └── Enums/  # PHP enums
+├── src/  # PHP source
+│   └── Enums/  # PHP enums
+└── xml/  # XML schemas
+    └── sitemap.xsd  # Sitemap validation schema
 ```
