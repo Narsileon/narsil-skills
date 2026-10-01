@@ -11,6 +11,6 @@
         },
     );
 @endphp
-<button data-slot="button" {{ $attributes->twMerge($class) }} type="button">
+<button {{ $attributes->twMerge($class)->merge(['data-slot' => 'button-root']) }} type="button">
     {{ $slot }}
 </button>

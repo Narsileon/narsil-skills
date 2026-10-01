@@ -1,9 +1,8 @@
 ---
 name: blade
 description: >-
-  Laravel Blade views and components — folder layout (ui, icons, blocks,
-  subblocks, layouts, mail, pages), View Component classes for logic, inline PHP in Blade
-  for Tailwind classes/variants, and twMerge via
+  Laravel Blade views and components — Narsil component structure, View Component
+  classes for logic, inline PHP in Blade for Tailwind classes/variants, and twMerge via
   gehrisandro/tailwind-merge-laravel. Use when creating or editing
   .blade.php, app/View/Components/, resources/views/, or Blade UI/block
   components.
@@ -17,57 +16,29 @@ Tailwind tokens: follow [tailwind](../tailwind/SKILL.md).
 
 Copy [templates/](templates/) into the target project. The stubs are the contract.
 
-| Artifact             | Template                                               | Role                                    |
-| -------------------- | ------------------------------------------------------ | --------------------------------------- |
-| View Component class | [component.stub](templates/component.stub)             | Logic + public props (`Ui\Button`)      |
-| UI Blade             | [component.blade.stub](templates/component.blade.stub) | Classes + variants (`@php` + `twMerge`) |
+| Artifact             | Template                                               | Role                       |
+| -------------------- | ------------------------------------------------------ | -------------------------- |
+| View Component class | [component.stub](templates/component.stub)             | Logic and public props     |
+| UI Blade             | [component.blade.stub](templates/component.blade.stub) | Markup, classes, and slots |
 
-## Folder layout
+## Component structure
 
-Under `resources/views/`:
+Use class-based components for `ui/`, `blocks/`, `contents/`, and `layout/`. Keep their PHP classes and Blade views in matching folders under `app/View/Components/` and `resources/views/components/`:
 
-```
-components/
-  ui/{component-name}.blade.php
-  icons/{icon-name}.blade.php
-  {block-name}.blade.php
-  {block-name}/{subblock-name}.blade.php
-  {page-name}/{subblock-name}.blade.php
-layouts/
-mail/
-pages/
-```
+| Kind | View | Class | Tag |
+| --- | --- | --- | --- |
+| UI part | `ui/{group}/{group-part}.blade.php` | `Ui\{Group}\{GroupPart}` | `<x-ui.{group}.{group-part}>` |
+| Block | `blocks/{group}/{group-part}.blade.php` | `Blocks\{Group}\{GroupPart}` | `<x-blocks.{group}.{group-part}>` |
+| CMS content | `contents/{group}/{group-part}.blade.php` | `Contents\{Group}\{GroupPart}` | `<x-contents.{group}.{group-part}>` |
+| App layout | `layout/{group}/{group-part}.blade.php` | `Layout\{Group}\{GroupPart}` | `<x-layout.{group}.{group-part}>` |
 
-| Path                                      | Role                                  | Builds with                              |
-| ----------------------------------------- | ------------------------------------- | ---------------------------------------- |
-| `components/ui/{name}.blade.php`          | Primitive UI                          | Markup and icons (no blocks / subblocks) |
-| `components/icons/{name}.blade.php`       | Icon                                  | SVG markup only                          |
-| `components/{block}.blade.php`            | Block                                 | UI and subblocks                         |
-| `components/{block}/{subblock}.blade.php` | Subblock                              | UI                                       |
-| `components/{page}/{subblock}.blade.php`  | Page subblock (repeated on that page) | UI                                       |
-| `layouts/`                                | Page layouts                          |                                          |
-| `mail/`                                   | Mail templates                        |                                          |
-| `pages/`                                  | Pages                                 | Layouts + blocks + page subblocks        |
+Use singular group names. Each group has a `{group}-root.blade.php` entry point and may have sibling parts such as `{group}-address.blade.php`. Match each part's view basename, PHP class suffix, tag leaf, and `data-slot`. For example, `ui/footer/footer-address.blade.php` maps to `Ui\Footer\FooterAddress`, `<x-ui.footer.footer-address>`, and `data-slot="footer-address"`.
 
-```blade
-{{-- components/hero.blade.php → <x-hero> --}}
-<section {{ $attributes }}>
-    <x-hero.heading>
-      {{ $heading }}
-    </x-hero.heading>
-    <x-ui.button :href="$ctaUrl">
-      {{ $ctaLabel }}
-    </x-ui.button>
-</section>
-```
-
-```blade
-{{-- pages/home.blade.php repeats a page-scoped block --}}
-<x-home.feature-card :title="$title" />
-{{-- components/home/feature-card.blade.php → <x-home.feature-card> --}}
-```
-
-Do not nest deeper than `{block}/{subblock}` or `{page}/{subblock}`. Do not add `components/{page}.blade.php` — pages live in `pages/`. Do not put blocks in `ui/` or `icons/`.
+- `ui/` contains reusable atomic parts. `blocks/` composes UI parts and content into a feature. `contents/` contains class-based roots dispatched from CMS content handles. Keep handle dispatch in the content renderer.
+- `layout/` contains app-shell components such as headers and footers; `layouts/` contains full-page layouts.
+- Keep page-owned lists and `@foreach` loops in the page. Extract reusable leaf markup into UI components; keep page-only subblocks under `components/{page}/`.
+- Switch and Tooltip are the reference compositions in Narsil Base: the Switch block composes `ui.switch.switch-root`, `switch-track`, and `switch-thumb`; the Tooltip block composes the UI provider, trigger, portal, positioner, popup, and arrow.
+- Each component part renders a matching `data-slot`; blocks without their own element forward attributes to the composed root. Only icon-only SVG views in `icons/` may be anonymous.
 
 ## Install tailwind-merge
 
@@ -102,33 +73,23 @@ Do **not** use `$attributes->merge(['class' => '…'])` for Tailwind — it does
 
 ## Component class
 
-- `final class` matching the view path: `App\View\Components\Ui\Button`, `App\View\Components\Icons\Check`, `App\View\Components\Hero`, `App\View\Components\Hero\Cta`, `App\View\Components\Home\FeatureCard` (or package namespace). Icons may be anonymous Blade (no class) when they are SVG-only.
 - Follow [php](../php/SKILL.md): no constructor property promotion; typed props in `PROPERTIES`; assign in `__construct`.
 - Keep constructors focused on assigning state. Delegate non-trivial normalization, derived values, route resolution, and conditional setup to private methods.
 - Public props for anything the view needs (`$variant`, `$size`, …).
-- `render(): View` returns the matching view (`view('components.ui.button')`, `view('components.icons.check')`, `view('components.hero')`, `view('components.hero.cta')`, `view('components.home.feature-card')`).
+- `render()` returns the view whose path mirrors the component class.
 
 ## Component Blade — classes & variants
 
-Put base classes and variant maps in `@php`, merge with `twMerge`, apply via `$attributes->twMerge(…)`:
+Put base classes and variant maps in `@php`. Make a component wrapper accept caller classes with `twMerge`, and set its root slot through the same attribute bag:
 
 ```blade
-@php
-    $class = twMerge(
-        'inline-flex items-center',
-        match ($size) {
-            'sm' => 'h-8 px-3',
-            default => 'h-9 px-4',
-        },
-        match ($variant) {
-            'secondary' => 'bg-secondary text-secondary-foreground',
-            default => 'bg-primary text-primary-foreground',
-        },
-    );
-@endphp
-<button data-slot="button" {{ $attributes->twMerge($class) }} type="button">
+<span
+	{{ $attributes->twMerge('pointer-events-none size-4 rounded-full')->merge([
+	    'data-slot' => 'switch-thumb',
+	]) }}
+>
     {{ $slot }}
-</button>
+</span>
 ```
 
 - Prefer `match` for variant → class maps (same as [php](../php/SKILL.md) — no ternaries).
@@ -137,5 +98,6 @@ Put base classes and variant maps in `@php`, merge with `twMerge`, apply via `$a
 
 ## File names
 
-- Blade: kebab-case (`button.blade.php`, `alert-dialog.blade.php`).
-- PHP class: PascalCase matching the path (`Ui/Button.php` → `<x-ui.button>`, `Icons/Check.php` → `<x-icons.check>`, `Hero.php` → `<x-hero>`, `Hero/Cta.php` → `<x-hero.cta>`, `Home/FeatureCard.php` → `<x-home.feature-card>`).
+- Blade: kebab-case and prefixed by the group and part.
+- PHP class: PascalCase and matches the full view path.
+- The root `data-slot` matches the part name and is set through the same attribute bag as merged classes.

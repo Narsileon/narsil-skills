@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\View\Components\Ui;
+namespace App\View\Components\Ui\Button;
 
 #region USE
 
@@ -11,7 +11,7 @@ use Illuminate\View\Component;
 
 #endregion
 
-final class Button extends Component
+final class ButtonRoot extends Component
 {
     #region CONSTRUCTOR
 
@@ -50,7 +50,7 @@ final class Button extends Component
      */
     public function render(): View
     {
-        return view('components.ui.button');
+        return view('components.ui.button.button-root');
     }
 
     #endregion
