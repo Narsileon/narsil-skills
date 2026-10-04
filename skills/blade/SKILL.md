@@ -5,7 +5,7 @@ description: >-
   classes for logic, inline PHP in Blade for Tailwind classes/variants, and twMerge via
   gehrisandro/tailwind-merge-laravel. Use when creating or editing
   .blade.php, app/View/Components/, resources/views/, or Blade UI/block
-  components.
+  components, or their Alpine controllers.
 ---
 
 # Blade
@@ -39,6 +39,13 @@ Use singular group names. Each group has a `{group}-root.blade.php` entry point 
 - Keep page-owned lists and `@foreach` loops in the page. Extract reusable leaf markup into UI components; keep page-only subblocks under `components/{page}/`.
 - Switch and Tooltip are the reference compositions in Narsil Base: the Switch block composes `ui.switch.switch-root`, `switch-track`, and `switch-thumb`; the Tooltip block composes the UI provider, trigger, portal, positioner, popup, and arrow.
 - Each component part renders a matching `data-slot`; blocks without their own element forward attributes to the composed root. Only icon-only SVG views in `icons/` may be anonymous.
+
+## Alpine structure
+
+- Put controllers in `resources/js/alpine/{group}/{group-part}.ts`, with singular feature groups and prefixed filenames. Use `{group}-root.ts` for the main controller, for example `rich-text-editor/rich-text-editor-root.ts`.
+- Give each controller its own file. Group by its feature; a resource modal belongs in `resource-modal/`, and a relation editor belongs in `relation/`.
+- Keep stores and shared controller factories in their feature group as `{group}-store.ts` and `{group}-controller.ts`. Only shared registration entry points belong at the Alpine root: `register-components.ts` and `register-stores.ts`.
+- Preserve existing Alpine registration names when reorganizing files.
 
 ## Install tailwind-merge
 
