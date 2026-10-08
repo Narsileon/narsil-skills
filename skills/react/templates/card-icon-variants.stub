@@ -1,0 +1,19 @@
+import { cva } from "class-variance-authority";
+
+const cardIconVariants = cva(
+  "inline-flex shrink-0 items-center justify-center",
+  {
+    defaultVariants: {
+      size: "default",
+    },
+    variants: {
+      size: {
+        default: "size-5",
+        sm: "size-4",
+        lg: "size-6",
+      },
+    },
+  },
+);
+
+export default cardIconVariants;

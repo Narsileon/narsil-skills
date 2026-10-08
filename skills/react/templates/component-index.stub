@@ -1,6 +1,13 @@
-import Button from "./button";
-import buttonVariants from "./button-variants";
+import CardContent from "./card-content";
+import CardIcon from "./card-icon";
+import cardIconVariants from "./card-icon-variants";
+import CardRoot from "./card-root";
+import cardRootVariants from "./card-root-variants";
 
-export { Button, buttonVariants };
-
-export type { ButtonVariantProps } from "./button-variants";
+export {
+  CardContent,
+  CardIcon,
+  CardRoot,
+  cardIconVariants,
+  cardRootVariants,
+};

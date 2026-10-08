@@ -1,0 +1,19 @@
+import { cn } from "@ui/lib/utils";
+import { type VariantProps } from "class-variance-authority";
+import { type ComponentProps } from "react";
+import cardIconVariants from "./card-icon-variants";
+
+type CardIconProps = ComponentProps<"span"> &
+  VariantProps<typeof cardIconVariants>;
+
+function CardIcon({ className, size = "default", ...props }: CardIconProps) {
+  return (
+    <span
+      data-slot="card-icon"
+      className={cn(cardIconVariants({ size: size }), className)}
+      {...props}
+    />
+  );
+}
+
+export default CardIcon;

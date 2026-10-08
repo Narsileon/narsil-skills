@@ -15,22 +15,26 @@ Tailwind tokens: follow [tailwind](../tailwind/SKILL.md).
 
 Read templates from [templates/](templates/) in this folder. Generated code goes in `resources/js/` (or package `resources/js/`).
 
-| Artifact     | Template                                                                     | Notes                                                         |
-| ------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Component    | [templates/component.stub](templates/component.stub)                         | `Button` — default export; `function` declaration             |
-| Component spacing | [templates/component-spacing.stub](templates/component-spacing.stub)   | Declaration order + blank lines between logic blocks          |
-| Variants     | [templates/component-variants.stub](templates/component-variants.stub)       | `buttonVariants` — CVA + `VariantProps`                       |
-| Barrel       | [templates/component-index.stub](templates/component-index.stub)             | `Button` barrel — named exports + `export type`               |
-| Page         | [templates/page.stub](templates/page.stub)                                   | `UsersIndex` — Inertia page                                   |
-| Hook         | [templates/hook.stub](templates/hook.stub)                                   | `useFetchForm` — default export                               |
-| Store        | [templates/store.stub](templates/store.stub)                                 | `useCartStore` — Zustand                                      |
-| Types        | [templates/types.stub](templates/types.stub)                                 | Shared `type` definitions                                     |
+| Artifact          | Template                                                                                 | Notes                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| UI root atom      | [templates/component.stub](templates/component.stub)                                     | `CardRoot` — default export; private props type            |
+| UI content atom   | [templates/card-content.stub](templates/card-content.stub)                              | `CardContent` — default export                             |
+| UI icon atom      | [templates/card-icon.stub](templates/card-icon.stub)                                    | `CardIcon` — props derived from its variant function      |
+| Root variants     | [templates/component-variants.stub](templates/component-variants.stub)                  | `cardRootVariants` — default CVA export                    |
+| Icon variants     | [templates/card-icon-variants.stub](templates/card-icon-variants.stub)                  | `cardIconVariants` — atom-specific CVA export              |
+| UI barrel         | [templates/component-index.stub](templates/component-index.stub)                        | Import defaults, then export named atoms and variants      |
+| Block card        | [templates/block-card.stub](templates/block-card.stub)                                  | Compose `CardRoot` and `CardContent`; derive props          |
+| Block barrel      | [templates/block-card-index.stub](templates/block-card-index.stub)                      | Import default block, then export it by name               |
+| Component spacing | [templates/component-spacing.stub](templates/component-spacing.stub)                    | Declaration order + blank lines between logic blocks       |
+| Page              | [templates/page.stub](templates/page.stub)                                              | `UsersIndex` — Inertia page                                 |
+| Hook              | [templates/hook.stub](templates/hook.stub)                                              | `useFetchForm` — default export                             |
+| Store             | [templates/store.stub](templates/store.stub)                                            | `useCartStore` — Zustand                                    |
 
 ## Imports
 
 **Never use parent-relative imports** (`../`, `../../`). Use path aliases (`@ui/…`, `@/…`) for anything outside the current folder. Ensure `tsconfig.json` `paths` and Vite `resolve.alias` match the project's aliases.
 
-`./` is allowed only for siblings in the same directory (e.g. `./button-variants`).
+`./` is allowed only for siblings in the same directory (e.g. `./card-root-variants`).
 
 ### Sort order (top to bottom)
 
@@ -48,27 +52,19 @@ When the project uses ESLint, [eslint](../eslint/SKILL.md) enforces import order
 ## Types
 
 - Use `type`, not `interface`.
-- Object shapes always use explicit key / value form:
-
-```ts
-type UserData = {
-  id: string;
-  name: string;
-  email: string;
-};
-```
-
-- Split props: `type ButtonProps = ComponentProps<"button"> & { … }` or `Pick` / `Omit` from existing components.
-- Export types from barrel files: `export type { ButtonVariantProps, CartItem };`
+- Object shapes always use explicit key / value form.
+- Define component prop types next to the component and keep them private: `type CardRootProps = ComponentProps<"div"> & { … }` or use `Pick` / `Omit` from another type.
+- Do not export component prop types from implementation files or barrels. Keep them private beside their component. Consumers can read or extend a component's props with `ComponentProps<typeof Component>`; see [templates/block-card.stub](templates/block-card.stub).
+- Shared domain/data types that are not component prop types may be exported from a barrel when other modules need them.
 - Prefer `Record<string, T>` over index signatures when the map is dynamic.
 
 ## Components
 
 - `function ComponentName(…)` — not `const ComponentName = () =>`.
-- Default export from the implementation file (`button.tsx`).
+- Default export from the implementation file (`card-root.tsx`).
 - Named re-exports from `index.ts` (`export { ComponentName }`).
-- Destructure props in the signature; put defaults on destructured params (`variant = "primary"`).
-- Pass object arguments with explicit keys: `cn({ className: className })`, `variants({ size: size, variant: variant })`.
+- Destructure props in the signature; put defaults on destructured params (`variant = "default"`).
+- Pass object arguments with explicit keys: `cn({ className: className })`, `cardRootVariants({ variant: variant })`.
 - Merge classes with `cn()` from the project's UI utils (e.g. `@ui/lib/utils`).
 - Set `data-slot="…"` on primitive wrappers where the design system expects it.
 - Handlers: `function handleClick() { … }` inside the component — not arrow functions or inline callbacks in JSX.
@@ -92,34 +88,16 @@ Same order as [html](../html/SKILL.md) attributes, with JSX names:
 5. Rest — other props alphabetically, then `{...spread}` if any
 6. `key` (always last)
 
-```tsx
-<button
-  ref={ref}
-  id="nav-filter"
-  data-slot="button"
-  className={className}
-  onClick={handleClick}
-  type={type}
-  {...props}
-  key={id}
->
-```
+Follow this order in the `CardRoot` implementation shown in [templates/component.stub](templates/component.stub).
 
 ## File names
 
-- Use **kebab-case** for file and folder names (e.g. `button.tsx`, `button-variants.ts`, `use-fetch-form.ts`, `users-index.tsx`).
-- Identifiers inside files keep their usual casing: PascalCase for components (`Button`), camelCase for hooks and utilities (`useFetchForm`).
+- Use **kebab-case** for file and folder names (e.g. `card-root.tsx`, `card-root-variants.ts`, `use-fetch-form.ts`, `users-index.tsx`).
+- Identifiers inside files keep their usual casing: PascalCase for components (`CardRoot`), camelCase for hooks and utilities (`useFetchForm`).
 
 ## Folder layout
 
-```
-components/button/
-  button.tsx           # default export
-  button-variants.ts   # optional CVA variants
-  index.ts             # barrel
-```
-
-Blocks/pages follow the same pattern under `blocks/` or `pages/`.
+Prefer two component layers: reusable atoms in `components/ui/` and composed, product-specific blocks in `components/blocks/`. The card example is in [templates/component.stub](templates/component.stub), [templates/component-index.stub](templates/component-index.stub), [templates/block-card.stub](templates/block-card.stub), and [templates/block-card-index.stub](templates/block-card-index.stub). Keep atom variants beside the atom (for example, `card-root-variants.ts` and `card-icon-variants.ts`). Each barrel imports defaults from its sibling files and exports named values; never export component prop types. Blocks/pages follow this pattern under `components/blocks/` or `components/pages/`.
 
 ## Performance
 

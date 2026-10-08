@@ -1,0 +1,16 @@
+import { CardContent, CardRoot } from "@ui/card";
+import { type ComponentProps } from "react";
+
+type CardProps = ComponentProps<typeof CardRoot> & {
+  contentClassName?: string;
+};
+
+function Card({ children, contentClassName, ...rootProps }: CardProps) {
+  return (
+    <CardRoot {...rootProps}>
+      <CardContent className={contentClassName}>{children}</CardContent>
+    </CardRoot>
+  );
+}
+
+export default Card;

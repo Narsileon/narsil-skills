@@ -1,22 +1,15 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 
-const buttonVariants = cva("inline-flex items-center", {
+const cardRootVariants = cva("flex min-w-0 flex-col", {
   defaultVariants: {
-    size: "default",
-    variant: "primary",
+    variant: "default",
   },
   variants: {
-    size: {
-      default: "h-9 px-4",
-      sm: "h-8 px-3",
-    },
     variant: {
-      primary: "bg-primary text-primary-foreground",
-      secondary: "bg-secondary text-secondary-foreground",
+      default: "rounded-none border-0 bg-transparent",
+      outline: "rounded-md border border-border shadow-md",
     },
   },
 });
 
-export type ButtonVariantProps = VariantProps<typeof buttonVariants>;
-
-export default buttonVariants;
+export default cardRootVariants;
