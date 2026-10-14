@@ -87,6 +87,8 @@ Do **not** use `$attributes->merge(['class' => '…'])` for Tailwind — it does
 
 ## Component Blade — classes & variants
 
+Base classes for basic atomic UI components in `ui/` on the corresponding shadcn/ui components. Change them only as needed to match the current design.
+
 Put base classes and variant maps in `@php`. Make a component wrapper accept caller classes with `twMerge`, and set its root slot through the same attribute bag:
 
 ```blade

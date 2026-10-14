@@ -60,6 +60,7 @@ When the project uses ESLint, [eslint](../eslint/SKILL.md) enforces import order
 
 ## Components
 
+- Base classes for basic atomic UI components in `components/ui/` on the corresponding shadcn/ui components. Change them only as needed to match the current design.
 - `function ComponentName(…)` — not `const ComponentName = () =>`.
 - Default export from the implementation file (`card-root.tsx`).
 - Named re-exports from `index.ts` (`export { ComponentName }`).
