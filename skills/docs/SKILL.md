@@ -9,6 +9,7 @@ description: >-
 # Documentation
 
 - Keep docs short and consistent: use a brief introduction, predictable headings, explanations before commands, no duplicated content, and update the relevant `index.md`.
+- Keep documentation compact and easy to scan: prefer concise lists and tables over verbose prose when they improve readability or comparison, and use consistent formats so readers can find and compare information quickly.
 - Keep project-wide docs in `docs/` and package-specific docs in the owning package's `docs/` folder.
 - Use the nearest `index.md` as the documentation entry point. The root index may link to package indexes, but should not list package documents individually.
 - Keep documentation indexes focused on documentation. `README.md` and `AGENTS.md` may link to the docs index; the docs index should not link back to them.
