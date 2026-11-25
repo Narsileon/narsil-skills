@@ -1,24 +1,13 @@
 # Structure
 
-Narsil Skills provides reusable agent guidance and PHP tooling for Narsil projects.
-
 ```text
 .  # Narsil Skills root
 ├── docs/  # Documentation
-│   ├── commands/  # Command documentation
-│   │   ├── index.md  # Command index
-│   │   ├── php.md  # PHP check and fix commands
-│   │   └── pint.md  # PHP formatting commands
-│   ├── index.md  # Documentation index
-│   └── structure.md  # Root structure reference
+│   └── commands/  # Command documentation
 ├── scripts/  # Development scripts
 │   └── php/  # PHP tooling
-│       ├── check  # Run PHP checks
 │       ├── checks/  # PHP code checks
-│       ├── files.php  # Shared PHP file discovery
-│       ├── fix  # Run PHP fixers
-│       ├── fixes/  # PHP code fixers
-│       └── status.php  # PHP tooling status
+│       └── fixes/  # PHP code fixers
 ├── skills/  # Portable agent skills
 │   ├── blade/  # Blade skill
 │   │   └── templates/  # Blade templates
@@ -39,5 +28,4 @@ Narsil Skills provides reusable agent guidance and PHP tooling for Narsil projec
 ├── src/  # PHP source
 │   └── Enums/  # PHP enums
 └── xml/  # XML schemas
-    └── sitemap.xsd  # Sitemap validation schema
 ```

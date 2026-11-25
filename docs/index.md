@@ -1,7 +1,5 @@
 # Documentation
 
-Documentation for Narsil Skills.
-
 ## Repository
 
 - [Commands](commands/index.md)
