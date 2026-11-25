@@ -2,9 +2,10 @@
 name: eslint
 description: >-
   ESLint flat config for TypeScript/React projects. Enforces import sort,
-  explicit object keys, unused imports, and Prettier compatibility. Use when
-  setting up linting, editing eslint.config, or when the user mentions
-  simple-import-sort, lint scripts, or aligning ESLint with team style.
+  explicit object keys, unused imports, TypeScript key sorting, and Prettier
+  compatibility. Use when setting up linting, editing eslint.config, or when
+  the user mentions simple-import-sort, perfectionist, lint scripts, or
+  aligning ESLint with team style.
 ---
 
 # ESLint
@@ -26,8 +27,17 @@ const sharedRules = {
   'object-shorthand': ['error', 'never'],
   'simple-import-sort/imports': ['error', { groups: simpleImportSortGroups }],
   'simple-import-sort/exports': 'error',
-  'typescript-sort-keys/interface': 'error',
-  'typescript-sort-keys/string-enum': 'error',
+  'perfectionist/sort-interfaces': 'error',
+  'perfectionist/sort-enums': [
+    'error',
+    {
+      useConfigurationIf: {
+        matchesAstSelector: `TSEnumDeclaration:not(:has(TSEnumMember:not([initializer.raw=/^[\"']/])))`,
+      },
+      type: 'alphabetical',
+    },
+    { type: 'unsorted' },
+  ],
   'no-console': ['warn', { allow: ['info', 'warn', 'error'] }],
   camelcase: 'off',
   'no-unused-vars': 'off',
@@ -68,21 +78,21 @@ TypeScript files — turn off overlapping core/TS unused-vars rules:
 | `curly` | `all` | Braces on all control flow |
 | `react/jsx-boolean-value` | `always` | `disabled={true}` not bare `disabled` |
 | `unused-imports/no-unused-imports` | `error` | Clean imports |
-| `typescript-sort-keys/interface` | `error` | Sorted keys (prefer `type` in new code) |
-| `typescript-sort-keys/string-enum` | `error` | Sorted enum members |
+| `perfectionist/sort-interfaces` | `error` | Sorted interface keys |
+| `perfectionist/sort-enums` | `error` | Alphabetical string enums; preserve explicit order for other enums |
 | `eslint-config-prettier` | last preset before custom rules | Prettier owns formatting |
 
-Register plugins `simple-import-sort`, `unused-imports`, and `typescript-sort-keys` in the flat-config block that spreads `sharedRules`.
+Register plugins `simple-import-sort`, `unused-imports`, and `perfectionist` in the flat-config block that spreads `sharedRules`. Use `perfectionist/sort-interfaces` and `perfectionist/sort-enums` instead of the older `eslint-plugin-typescript-sort-keys` rules.
 
-Finer import ordering (`@inertiajs`, `@ui`, `react`, `./` siblings) is documented in the react skill; `simple-import-sort` sorts within the `@?\\w` bucket alphabetically. Run `yarn lint:fix` after edits.
+Finer import ordering (`@inertiajs`, `@ui`, `react`, `./` siblings) is documented in the react skill; `simple-import-sort` sorts within the `@?\\w` bucket alphabetically. Run the project's lint-fix script after edits.
 
 ## Packages (install in every project)
 
 Core plugins — required regardless of framework:
 
 ```bash
-yarn add -D eslint eslint-config-prettier \
-  eslint-plugin-simple-import-sort eslint-plugin-typescript-sort-keys \
+pnpm add -D eslint eslint-config-prettier \
+  eslint-plugin-simple-import-sort eslint-plugin-perfectionist \
   eslint-plugin-unused-imports
 ```
 
@@ -102,17 +112,17 @@ Typical ignores: `.next/**`, `dist/**`, `node_modules/**`, `**/*.d.ts`, `public/
 Additional packages:
 
 ```bash
-yarn add -D eslint-config-next
+pnpm add -D eslint-config-next
 ```
 
-Presets: spread `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`, then prettier, then the shared-rules block. Optional: `eslint-plugin-cypress` + `cypress.configs.globals` when using Cypress.
+Import `defineConfig` and `globalIgnores` from `eslint/config`; spread `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`; then add `eslint-config-prettier/flat`, followed by a custom block that registers `react`, `simple-import-sort`, `unused-imports`, and `perfectionist` and applies `sharedRules`. Set `settings.react.version` to `"detect"`. Typical ignores include `.next/**`, `.next-*/**`, `dist/**`, `node_modules/**`, `public/**`, generated types, and `vendor/**`. Optional: `eslint-plugin-cypress` + `cypress.configs.globals` when using Cypress.
 
 ## Vite + React (Inertia, SPA, UI package)
 
 Additional packages:
 
 ```bash
-yarn add -D @eslint/js typescript-eslint globals \
+pnpm add -D @eslint/js typescript-eslint globals \
   eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-jsx-a11y
 ```
 
@@ -123,7 +133,7 @@ Presets: `@eslint/js` recommended, `typescript-eslint` recommended, prettier, th
 Additional package:
 
 ```bash
-yarn add -D eslint-plugin-astro
+pnpm add -D eslint-plugin-astro
 ```
 
 Use the Vite + React setup, then spread `eslintPluginAstro.configs['flat/recommended']`. Ignore `.astro/**` build output. Apply `sharedRules` on `**/*.{ts,astro}` as well as React files.

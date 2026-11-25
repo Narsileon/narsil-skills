@@ -47,7 +47,7 @@ Read templates from [templates/](templates/) in this folder. Generated code goes
 
 Within a multiline import, sort bindings alphabetically. Use trailing commas. Prefer `import type { … }` or inline `type` keyword for type-only imports.
 
-When the project uses ESLint, [eslint](../eslint/SKILL.md) enforces import order (`simple-import-sort`), explicit object keys (`object-shorthand: never`), and related rules — run `yarn lint:fix` after edits.
+When the project uses ESLint, [eslint](../eslint/SKILL.md) enforces import order (`simple-import-sort`), explicit object keys (`object-shorthand: never`), and related rules — run the project's `lint:fix` script after edits.
 
 ## Types
 
